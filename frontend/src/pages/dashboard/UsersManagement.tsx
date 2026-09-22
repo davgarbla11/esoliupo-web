@@ -1,8 +1,17 @@
 import { isAxiosError } from 'axios'
 import { motion } from 'framer-motion'
-import { CircleAlert, EllipsisVertical, Loader2, Search, ShieldCheck, Users2 } from 'lucide-react'
+import {
+  CircleAlert,
+  EllipsisVertical,
+  Loader2,
+  Search,
+  ShieldCheck,
+  UserPlus,
+  Users2,
+} from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { type Role, useAuth } from '../../context/AuthContext'
+import CreateUserDialog from '../../components/dashboard/CreateUserDialog'
 import PositionsManagementDialog from '../../components/dashboard/PositionsManagementDialog'
 import UserActionsDialog from '../../components/dashboard/UserActionsDialog'
 import api from '../../lib/api'
@@ -73,6 +82,7 @@ function UsersManagement() {
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [dialogUser, setDialogUser] = useState<ManagedUser | null>(null)
   const [boardDialogOpen, setBoardDialogOpen] = useState(false)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [rowMessages, setRowMessages] = useState<
     Record<string, { type: 'success' | 'error'; text: string }>
   >({})
@@ -132,6 +142,10 @@ function UsersManagement() {
     })
   }
 
+  function handleAvatarChange(id: string, photoUrl: string) {
+    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, photoUrl } : u)))
+  }
+
   const filteredUsers = useMemo(() => {
     const term = search.trim().toLowerCase()
     if (!term) return users
@@ -186,6 +200,14 @@ function UsersManagement() {
           >
             <Users2 size={16} />
             Gestionar cargos
+          </button>
+          <button
+            type="button"
+            onClick={() => setCreateDialogOpen(true)}
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-gold-400 px-4 py-2 text-sm font-semibold text-neutral-900 hover:scale-[1.02]"
+          >
+            <UserPlus size={16} />
+            Crear usuario
           </button>
         </div>
       </motion.div>
@@ -318,6 +340,7 @@ function UsersManagement() {
           user={dialogUser}
           onClose={() => setDialogUser(null)}
           onStatusChange={handleStatusChange}
+          onAvatarChange={handleAvatarChange}
         />
       )}
 
@@ -326,6 +349,13 @@ function UsersManagement() {
           users={assignableUsers}
           onClose={() => setBoardDialogOpen(false)}
           onChanged={loadUsers}
+        />
+      )}
+
+      {createDialogOpen && (
+        <CreateUserDialog
+          onClose={() => setCreateDialogOpen(false)}
+          onCreated={(user) => setUsers((prev) => [...prev, user])}
         />
       )}
     </div>

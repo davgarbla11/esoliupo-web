@@ -1,21 +1,58 @@
 import { isAxiosError } from 'axios'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Eye, EyeOff, Loader2, LogIn } from 'lucide-react'
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import logoIcon from '../assets/icon-mark.png'
 import HeroBackground from '../components/HeroBackground'
 import { useAuth } from '../context/AuthContext'
+import type { GoogleCredentialResponse } from '../types/google-identity'
 
 function Login() {
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const { login, loginWithGoogle } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [remember, setRemember] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const googleButtonRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
+    async function handleGoogleCredential(response: GoogleCredentialResponse) {
+      setError('')
+      try {
+        await loginWithGoogle(response.credential)
+        navigate('/dashboard')
+      } catch (err) {
+        const message = isAxiosError<{ error?: string }>(err)
+          ? err.response?.data.error
+          : undefined
+        setError(message ?? 'No se ha podido iniciar sesión con Google.')
+      }
+    }
+
+    const interval = setInterval(() => {
+      if (window.google && googleButtonRef.current) {
+        clearInterval(interval)
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleCredential,
+        })
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
+          theme: 'filled_black',
+          size: 'large',
+          shape: 'pill',
+          width: 320,
+        })
+      }
+    }, 100)
+
+    return () => clearInterval(interval)
+  }, [loginWithGoogle, navigate])
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -69,7 +106,17 @@ function Login() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+          <div className="mt-6 flex justify-center">
+            <div ref={googleButtonRef} />
+          </div>
+
+          <div className="mt-6 flex items-center gap-3 text-xs uppercase tracking-wide text-white/40">
+            <div className="h-px flex-1 bg-white/10" />
+            o con tu correo
+            <div className="h-px flex-1 bg-white/10" />
+          </div>
+
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
               <label
                 htmlFor="email"

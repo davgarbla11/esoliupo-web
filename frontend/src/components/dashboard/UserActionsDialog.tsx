@@ -1,5 +1,6 @@
 import { isAxiosError } from 'axios'
 import {
+  Camera,
   Check,
   CircleAlert,
   Copy,
@@ -10,7 +11,7 @@ import {
   UserX,
   X,
 } from 'lucide-react'
-import { useState } from 'react'
+import { type ChangeEvent, useRef, useState } from 'react'
 import api from '../../lib/api'
 
 export type DialogUser = {
@@ -18,6 +19,7 @@ export type DialogUser = {
   name: string
   email: string
   active: boolean
+  photoUrl?: string | null
 }
 
 type Step = 'menu' | 'confirm-status' | 'password-result'
@@ -26,14 +28,34 @@ type UserActionsDialogProps = {
   user: DialogUser
   onClose: () => void
   onStatusChange: (id: string, active: boolean) => void
+  onAvatarChange: (id: string, photoUrl: string) => void
 }
 
-function UserActionsDialog({ user, onClose, onStatusChange }: UserActionsDialogProps) {
+function getInitials(name: string) {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase()
+}
+
+function UserActionsDialog({
+  user,
+  onClose,
+  onStatusChange,
+  onAvatarChange,
+}: UserActionsDialogProps) {
   const [step, setStep] = useState<Step>('menu')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [temporaryPassword, setTemporaryPassword] = useState('')
   const [copied, setCopied] = useState(false)
+  const [photoUrl, setPhotoUrl] = useState(user.photoUrl ?? null)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const [avatarError, setAvatarError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   function getErrorMessage(err: unknown, fallback: string) {
     return isAxiosError<{ error?: string }>(err) ? err.response?.data.error ?? fallback : fallback
@@ -68,6 +90,32 @@ function UserActionsDialog({ user, onClose, onStatusChange }: UserActionsDialogP
     }
   }
 
+  async function handleAvatarSelected(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
+    setAvatarUploading(true)
+    setAvatarError('')
+    try {
+      const formData = new FormData()
+      formData.append('avatar', file)
+      const res = await api.post<{ user: { photoUrl: string | null } }>(
+        `/users/${user.id}/avatar`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } },
+      )
+      if (res.data.user.photoUrl) {
+        setPhotoUrl(res.data.user.photoUrl)
+        onAvatarChange(user.id, res.data.user.photoUrl)
+      }
+    } catch (err) {
+      setAvatarError(getErrorMessage(err, 'No se ha podido subir la foto.'))
+    } finally {
+      setAvatarUploading(false)
+    }
+  }
+
   async function copyPassword() {
     try {
       await navigator.clipboard.writeText(temporaryPassword)
@@ -90,8 +138,49 @@ function UserActionsDialog({ user, onClose, onStatusChange }: UserActionsDialogP
           <X size={18} />
         </button>
 
-        <p className="font-medium text-white">{user.name}</p>
-        <p className="text-sm text-white/50">{user.email}</p>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={avatarUploading}
+            className="group relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gold-400 text-lg font-semibold text-neutral-900"
+            aria-label="Cambiar foto"
+          >
+            {photoUrl ? (
+              <img
+                src={photoUrl}
+                alt={user.name}
+                className="h-14 w-14 rounded-full object-cover"
+              />
+            ) : (
+              getInitials(user.name)
+            )}
+            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
+              {avatarUploading ? (
+                <Loader2 size={18} className="animate-spin text-white" />
+              ) : (
+                <Camera size={18} className="text-white" />
+              )}
+            </span>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleAvatarSelected}
+            className="hidden"
+          />
+          <div>
+            <p className="font-medium text-white">{user.name}</p>
+            <p className="text-sm text-white/50">{user.email}</p>
+          </div>
+        </div>
+        {avatarError && (
+          <p className="mt-2 flex items-center gap-2 text-sm text-red-400">
+            <CircleAlert size={14} />
+            {avatarError}
+          </p>
+        )}
 
         {step === 'menu' && (
           <div className="mt-5 space-y-1.5">

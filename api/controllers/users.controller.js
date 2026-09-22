@@ -1,7 +1,10 @@
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
+import fs from 'fs/promises'
+import sharp from 'sharp'
 import prisma from '../lib/prisma.js'
 import { ROLES } from '../lib/rbac.js'
+import { avatarPath, avatarUrl } from '../lib/storage.js'
 
 function toPublicUser(user) {
   return {
@@ -27,6 +30,34 @@ export async function listUsers(req, res) {
     orderBy: { createdAt: 'asc' },
   })
   res.json({ users: users.map(toPublicUser) })
+}
+
+export async function createUser(req, res) {
+  const { name, email, role } = req.body
+
+  if (!name?.trim() || !email?.trim()) {
+    return res.status(400).json({ error: 'Nombre y correo son obligatorios.' })
+  }
+
+  const finalRole = role || ROLES.SOCIO
+  if (!Object.values(ROLES).includes(finalRole)) {
+    return res.status(400).json({ error: 'Rol inválido.' })
+  }
+
+  const existing = await prisma.user.findUnique({ where: { email: email.trim() } })
+  if (existing) {
+    return res.status(409).json({ error: 'Ya existe una cuenta con ese correo.' })
+  }
+
+  const temporaryPassword = generateTemporaryPassword()
+  const passwordHash = await bcrypt.hash(temporaryPassword, 10)
+
+  const user = await prisma.user.create({
+    data: { name: name.trim(), email: email.trim(), passwordHash, role: finalRole },
+    include: { position: true },
+  })
+
+  res.status(201).json({ user: toPublicUser(user), temporaryPassword })
 }
 
 export async function updateUserRole(req, res) {
@@ -97,6 +128,34 @@ export async function updateUserProfile(req, res) {
     data,
     include: { position: true },
   })
+  res.json({ user: toPublicUser(updated) })
+}
+
+export async function uploadUserAvatar(req, res) {
+  const { id } = req.params
+
+  if (!req.file) {
+    return res.status(400).json({ error: 'No se ha recibido ninguna imagen.' })
+  }
+
+  const user = await prisma.user.findUnique({ where: { id } })
+  if (!user) {
+    return res.status(404).json({ error: 'Usuario no encontrado.' })
+  }
+
+  const resized = await sharp(req.file.buffer)
+    .resize(512, 512, { fit: 'cover' })
+    .webp({ quality: 82 })
+    .toBuffer()
+
+  await fs.writeFile(avatarPath(id), resized)
+
+  const updated = await prisma.user.update({
+    where: { id },
+    data: { photoUrl: avatarUrl(req, id) },
+    include: { position: true },
+  })
+
   res.json({ user: toPublicUser(updated) })
 }
 

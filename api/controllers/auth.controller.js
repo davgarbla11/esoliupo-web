@@ -1,4 +1,6 @@
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
+import { verifyGoogleToken } from '../lib/googleAuth.js'
 import prisma from '../lib/prisma.js'
 import { signAuthToken } from '../lib/jwt.js'
 
@@ -63,6 +65,47 @@ export async function login(req, res) {
 
   if (!user || !passwordMatches) {
     return res.status(401).json({ error: 'Correo o contraseña incorrectos.' })
+  }
+
+  if (!user.active) {
+    return res.status(403).json({ error: 'Tu cuenta ha sido dada de baja. Contacta con la asociación.' })
+  }
+
+  const token = signAuthToken({ sub: user.id, role: user.role })
+  res.cookie(COOKIE_NAME, token, cookieOptions())
+  res.json({ user: toPublicUser(user) })
+}
+
+export async function googleLogin(req, res) {
+  const { credential } = req.body
+
+  if (!credential) {
+    return res.status(400).json({ error: 'Falta el token de Google.' })
+  }
+
+  let payload
+  try {
+    payload = await verifyGoogleToken(credential)
+  } catch {
+    return res.status(401).json({ error: 'No se ha podido verificar la cuenta de Google.' })
+  }
+
+  if (!payload?.email || !payload.email_verified) {
+    return res.status(401).json({ error: 'Tu cuenta de Google no tiene el correo verificado.' })
+  }
+
+  let user = await prisma.user.findUnique({ where: { email: payload.email } })
+
+  if (!user) {
+    const randomPasswordHash = await bcrypt.hash(crypto.randomBytes(24).toString('hex'), 10)
+    user = await prisma.user.create({
+      data: {
+        email: payload.email,
+        name: payload.name || payload.email,
+        passwordHash: randomPasswordHash,
+        photoUrl: payload.picture || null,
+      },
+    })
   }
 
   if (!user.active) {

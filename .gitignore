@@ -137,3 +137,6 @@ dist
 
 # Local Postgres data (bind mount for docker-compose.dev.yml)
 .pgdata/
+
+# Uploaded user files (avatars, etc.)
+api/storage/

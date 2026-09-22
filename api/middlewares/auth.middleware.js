@@ -43,3 +43,16 @@ export function requirePermission(permission) {
     next()
   }
 }
+
+export function requireSelfOrPermission(permission) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ error: 'No autenticado.' })
+    }
+    const isSelf = req.params.id === req.user.sub
+    if (!isSelf && !hasPermission(req.user.role, permission)) {
+      return res.status(403).json({ error: 'No tienes permisos para esto.' })
+    }
+    next()
+  }
+}
