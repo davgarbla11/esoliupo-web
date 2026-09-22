@@ -22,6 +22,7 @@ function toPublicUser(user) {
     email: user.email,
     name: user.name,
     role: user.role,
+    photoUrl: user.photoUrl,
   }
 }
 

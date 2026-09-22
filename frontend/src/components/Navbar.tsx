@@ -2,6 +2,7 @@ import { Menu, UserRound, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import logoIcon from '../assets/icon-mark.png'
+import { useAuth } from '../context/AuthContext'
 
 const links = [
   { to: '/', label: 'Inicio' },
@@ -14,6 +15,7 @@ function Navbar() {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const { pathname } = useLocation()
+  const { user } = useAuth()
   const transparent = !scrolled && !open
 
   useEffect(() => {
@@ -63,13 +65,29 @@ function Navbar() {
             ))}
           </ul>
 
-          <NavLink
-            to="/login"
-            className="inline-flex items-center gap-1.5 rounded-full bg-gold-400 px-4 py-2 text-sm font-semibold text-neutral-900 shadow-[0_0_0_1px_rgba(0,0,0,0.05)] transition-transform hover:scale-105"
-          >
-            <UserRound size={16} />
-            Área de Socio
-          </NavLink>
+          {user ? (
+            <NavLink to="/dashboard" aria-label="Ir a mi panel">
+              {user.photoUrl ? (
+                <img
+                  src={user.photoUrl}
+                  alt={user.name}
+                  className="h-9 w-9 rounded-full object-cover ring-2 ring-gold-400/60 transition-transform hover:scale-105"
+                />
+              ) : (
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-400 text-sm font-semibold text-neutral-900 ring-2 ring-gold-400/60 transition-transform hover:scale-105">
+                  {user.name[0]?.toUpperCase()}
+                </div>
+              )}
+            </NavLink>
+          ) : (
+            <NavLink
+              to="/login"
+              className="inline-flex items-center gap-1.5 rounded-full bg-gold-400 px-4 py-2 text-sm font-semibold text-neutral-900 shadow-[0_0_0_1px_rgba(0,0,0,0.05)] transition-transform hover:scale-105"
+            >
+              <UserRound size={16} />
+              Área de Socio
+            </NavLink>
+          )}
         </div>
 
         <button
@@ -99,13 +117,33 @@ function Navbar() {
             </li>
           ))}
           <li className="mt-2">
-            <NavLink
-              to="/login"
-              className="flex items-center justify-center gap-1.5 rounded-full bg-gold-400 px-4 py-2.5 text-sm font-semibold text-neutral-900"
-            >
-              <UserRound size={16} />
-              Área de Socio
-            </NavLink>
+            {user ? (
+              <NavLink
+                to="/dashboard"
+                className="flex items-center gap-2 rounded-full bg-white/5 px-4 py-2.5 text-sm font-semibold text-white"
+              >
+                {user.photoUrl ? (
+                  <img
+                    src={user.photoUrl}
+                    alt={user.name}
+                    className="h-6 w-6 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gold-400 text-xs font-semibold text-neutral-900">
+                    {user.name[0]?.toUpperCase()}
+                  </div>
+                )}
+                {user.name}
+              </NavLink>
+            ) : (
+              <NavLink
+                to="/login"
+                className="flex items-center justify-center gap-1.5 rounded-full bg-gold-400 px-4 py-2.5 text-sm font-semibold text-neutral-900"
+              >
+                <UserRound size={16} />
+                Área de Socio
+              </NavLink>
+            )}
           </li>
         </ul>
       )}

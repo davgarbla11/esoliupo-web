@@ -106,17 +106,7 @@ function Login() {
             </p>
           </div>
 
-          <div className="mt-6 flex justify-center">
-            <div ref={googleButtonRef} />
-          </div>
-
-          <div className="mt-6 flex items-center gap-3 text-xs uppercase tracking-wide text-white/40">
-            <div className="h-px flex-1 bg-white/10" />
-            o con tu correo
-            <div className="h-px flex-1 bg-white/10" />
-          </div>
-
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
             <div>
               <label
                 htmlFor="email"
@@ -193,6 +183,16 @@ function Login() {
               {loading ? 'Entrando…' : 'Iniciar sesión'}
             </button>
           </form>
+
+          <div className="mt-6 flex items-center gap-3 text-xs uppercase tracking-wide text-white/40">
+            <div className="h-px flex-1 bg-white/10" />
+            o
+            <div className="h-px flex-1 bg-white/10" />
+          </div>
+
+          <div className="mt-6 flex justify-center">
+            <div ref={googleButtonRef} />
+          </div>
 
           <p className="mt-6 text-center text-sm text-white/50">
             ¿Todavía no eres socio?{' '}

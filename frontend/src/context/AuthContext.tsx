@@ -8,6 +8,7 @@ export type User = {
   email: string
   name: string
   role: Role
+  photoUrl: string | null
 }
 
 type AuthContextValue = {
