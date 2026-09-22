@@ -3,6 +3,8 @@ import {
   GraduationCap,
   LayoutDashboard,
   LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
   ShieldCheck,
   User,
   UserCheck,
@@ -42,7 +44,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </span>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3">
         {modules
           .filter((item) => isAtLeast(user?.role, item.minRole))
           .map((item) => (
@@ -93,14 +95,31 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 type SidebarProps = {
   mobileOpen: boolean
   onClose: () => void
+  collapsed: boolean
+  onToggleCollapsed: () => void
 }
 
-function Sidebar({ mobileOpen, onClose }: SidebarProps) {
+function Sidebar({ mobileOpen, onClose, collapsed, onToggleCollapsed }: SidebarProps) {
   return (
     <>
-      <aside className="hidden w-64 flex-col border-r border-white/10 bg-black lg:flex">
+      <aside
+        className={`fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-white/10 bg-black transition-transform duration-300 lg:flex ${
+          collapsed ? '-translate-x-full' : 'translate-x-0'
+        }`}
+      >
         <SidebarContent />
       </aside>
+
+      <button
+        type="button"
+        onClick={onToggleCollapsed}
+        aria-label={collapsed ? 'Mostrar menú' : 'Ocultar menú'}
+        className={`fixed top-5 z-40 hidden h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black text-white/60 transition-all duration-300 hover:text-white lg:flex ${
+          collapsed ? 'left-4' : 'left-[15.5rem]'
+        }`}
+      >
+        {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+      </button>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">

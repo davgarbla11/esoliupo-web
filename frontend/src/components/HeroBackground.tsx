@@ -22,53 +22,59 @@ const nodes = [
   { cx: 1340, cy: 680, delay: '0.9s' },
 ]
 
-function HeroBackground() {
+type HeroBackgroundProps = {
+  subtle?: boolean
+}
+
+function HeroBackground({ subtle = false }: HeroBackgroundProps) {
   return (
     <div className="fixed inset-0 z-0 overflow-hidden bg-black">
-      <div className="animate-blob-drift absolute -left-40 top-0 h-[36rem] w-[36rem] rounded-full bg-gold-500/20 blur-3xl" />
-      <div className="animate-blob-drift absolute -right-40 bottom-0 h-[32rem] w-[32rem] rounded-full bg-gold-400/10 blur-3xl [animation-delay:3s]" />
+      <div className={subtle ? 'opacity-35' : undefined}>
+        <div className="animate-blob-drift absolute -left-40 top-0 h-[36rem] w-[36rem] rounded-full bg-gold-500/20 blur-3xl" />
+        <div className="animate-blob-drift absolute -right-40 bottom-0 h-[32rem] w-[32rem] rounded-full bg-gold-400/10 blur-3xl [animation-delay:3s]" />
 
-      <svg
-        className="absolute inset-0 h-full w-full opacity-70"
-        viewBox="0 0 1600 900"
-        preserveAspectRatio="xMidYMid slice"
-        fill="none"
-        aria-hidden="true"
-      >
-        {traces.map((trace, i) => (
-          <path
-            key={i}
-            d={trace.d}
-            stroke="#fcc101"
-            strokeOpacity={0.35}
-            strokeWidth={2}
-          />
-        ))}
-        {traces.map((trace, i) => (
-          <path
-            key={`pulse-${i}`}
-            d={trace.d}
-            stroke="#fcc101"
-            strokeWidth={2}
-            strokeDasharray="40 360"
-            className="animate-circuit-draw"
-            style={{ animationDelay: trace.delay }}
-          />
-        ))}
-        {nodes.map((node, i) => (
-          <circle
-            key={i}
-            cx={node.cx}
-            cy={node.cy}
-            r={5}
-            fill="#fcc101"
-            className="animate-node-glow"
-            style={{ animationDelay: node.delay }}
-          />
-        ))}
-      </svg>
+        <svg
+          className="absolute inset-0 h-full w-full opacity-70"
+          viewBox="0 0 1600 900"
+          preserveAspectRatio="xMidYMid slice"
+          fill="none"
+          aria-hidden="true"
+        >
+          {traces.map((trace, i) => (
+            <path
+              key={i}
+              d={trace.d}
+              stroke="#fcc101"
+              strokeOpacity={0.35}
+              strokeWidth={2}
+            />
+          ))}
+          {traces.map((trace, i) => (
+            <path
+              key={`pulse-${i}`}
+              d={trace.d}
+              stroke="#fcc101"
+              strokeWidth={2}
+              strokeDasharray="40 360"
+              className="animate-circuit-draw"
+              style={{ animationDelay: trace.delay }}
+            />
+          ))}
+          {nodes.map((node, i) => (
+            <circle
+              key={i}
+              cx={node.cx}
+              cy={node.cy}
+              r={5}
+              fill="#fcc101"
+              className="animate-node-glow"
+              style={{ animationDelay: node.delay }}
+            />
+          ))}
+        </svg>
 
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)]" />
+      </div>
     </div>
   )
 }
