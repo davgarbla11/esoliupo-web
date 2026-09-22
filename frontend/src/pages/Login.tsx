@@ -193,13 +193,6 @@ function Login() {
           <div className="mt-6 flex justify-center">
             <div ref={googleButtonRef} />
           </div>
-
-          <p className="mt-6 text-center text-sm text-white/50">
-            ¿Todavía no eres socio?{' '}
-            <Link to="/contacto" className="text-gold-400 hover:text-gold-300">
-              Contacta con nosotros
-            </Link>
-          </p>
         </motion.div>
       </div>
     </div>

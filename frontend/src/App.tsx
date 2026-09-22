@@ -7,8 +7,11 @@ import PublicLayout from './layouts/PublicLayout'
 import Activities from './pages/Activities'
 import Contact from './pages/Contact'
 import DashboardHome from './pages/dashboard/DashboardHome'
+import MembershipRequests from './pages/dashboard/MembershipRequests'
+import MyProfile from './pages/dashboard/MyProfile'
 import UsersManagement from './pages/dashboard/UsersManagement'
 import Home from './pages/Home'
+import JoinRequest from './pages/JoinRequest'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
 import WhoWeAre from './pages/WhoWeAre'
@@ -46,15 +49,7 @@ function App() {
               />
             }
           />
-          <Route
-            path="perfil"
-            element={
-              <ModulePlaceholder
-                title="Mi perfil"
-                description="Próximamente: edita tu foto de perfil, alias y contraseña."
-              />
-            }
-          />
+          <Route path="perfil" element={<MyProfile />} />
           <Route
             path="comisiones"
             element={
@@ -70,10 +65,7 @@ function App() {
             path="socios"
             element={
               <ProtectedRoute minRole="JUNTA_DIRECTIVA">
-                <ModulePlaceholder
-                  title="Socios"
-                  description="Próximamente: aprueba las solicitudes de nuevos socios."
-                />
+                <MembershipRequests />
               </ProtectedRoute>
             }
           />
@@ -92,6 +84,7 @@ function App() {
           <Route path="quienes-somos" element={<WhoWeAre />} />
           <Route path="actividades" element={<Activities />} />
           <Route path="contacto" element={<Contact />} />
+          <Route path="unete" element={<JoinRequest />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

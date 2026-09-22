@@ -40,13 +40,25 @@ router.post(
   uploadUserAvatar,
 )
 
+router.patch(
+  '/:id/profile',
+  requireAuth,
+  requireSelfOrPermission('MANAGE_USERS'),
+  updateUserProfile,
+)
+
+router.patch(
+  '/:id/status',
+  requireAuth,
+  requireSelfOrPermission('MANAGE_USERS'),
+  updateUserStatus,
+)
+
 router.use(requireAuth, requirePermission('MANAGE_USERS'))
 
 router.get('/', listUsers)
 router.post('/', createUser)
 router.patch('/:id/role', requirePermission('MANAGE_ROLES'), updateUserRole)
-router.patch('/:id/status', updateUserStatus)
-router.patch('/:id/profile', updateUserProfile)
 router.post('/:id/reset-password', resetUserPassword)
 
 export default router

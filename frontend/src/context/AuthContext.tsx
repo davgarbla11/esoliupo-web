@@ -9,6 +9,7 @@ export type User = {
   name: string
   role: Role
   photoUrl: string | null
+  studies: string | null
 }
 
 type AuthContextValue = {
@@ -17,6 +18,7 @@ type AuthContextValue = {
   login: (email: string, password: string) => Promise<User>
   loginWithGoogle: (credential: string) => Promise<User>
   logout: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -26,12 +28,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api
-      .get<{ user: User }>('/auth/me')
-      .then((res) => setUser(res.data.user))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false))
+    refreshUser().finally(() => setLoading(false))
   }, [])
+
+  async function refreshUser() {
+    try {
+      const res = await api.get<{ user: User }>('/auth/me')
+      setUser(res.data.user)
+    } catch {
+      setUser(null)
+    }
+  }
 
   async function login(email: string, password: string) {
     const res = await api.post<{ user: User }>('/auth/login', { email, password })
@@ -51,7 +58,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, loginWithGoogle, logout, refreshUser }}
+    >
       {children}
     </AuthContext.Provider>
   )

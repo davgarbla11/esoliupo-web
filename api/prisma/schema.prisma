@@ -40,3 +40,20 @@ model Position {
 
   @@map("positions")
 }
+
+enum MembershipRequestStatus {
+  PENDING
+  APPROVED
+}
+
+model MembershipRequest {
+  id           String                  @id @default(uuid())
+  name         String
+  email        String
+  motivation   String
+  isUpoStudent Boolean
+  status       MembershipRequestStatus @default(PENDING)
+  createdAt    DateTime                @default(now())
+
+  @@map("membership_requests")
+}

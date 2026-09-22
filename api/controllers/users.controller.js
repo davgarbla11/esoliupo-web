@@ -93,8 +93,10 @@ export async function updateUserStatus(req, res) {
     return res.status(400).json({ error: 'Estado inválido.' })
   }
 
-  if (id === req.user.sub && !active) {
-    return res.status(400).json({ error: 'No puedes darte de baja a ti mismo.' })
+  if (id === req.user.sub && !active && req.user.role === ROLES.ADMINISTRADOR) {
+    return res
+      .status(400)
+      .json({ error: 'Un Administrador no puede darse de baja a sí mismo.' })
   }
 
   const user = await prisma.user.findUnique({ where: { id } })

@@ -77,7 +77,7 @@ function Home() {
             className="mt-10 flex flex-wrap items-center justify-center gap-4"
           >
             <Link
-              to="/contacto"
+              to="/unete"
               className="inline-flex items-center gap-2 rounded-full bg-gold-400 px-6 py-3 text-sm font-semibold text-neutral-900 transition-transform hover:scale-105"
             >
               Únete a la asociación

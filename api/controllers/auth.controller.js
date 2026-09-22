@@ -23,6 +23,7 @@ function toPublicUser(user) {
     name: user.name,
     role: user.role,
     photoUrl: user.photoUrl,
+    studies: user.studies,
   }
 }
 
