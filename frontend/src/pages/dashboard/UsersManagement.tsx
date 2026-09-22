@@ -3,9 +3,7 @@ import { motion } from 'framer-motion'
 import { CircleAlert, EllipsisVertical, Loader2, Search, ShieldCheck, Users2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { type Role, useAuth } from '../../context/AuthContext'
-import BoardManagementDialog, {
-  type BoardUser,
-} from '../../components/dashboard/BoardManagementDialog'
+import PositionsManagementDialog from '../../components/dashboard/PositionsManagementDialog'
 import UserActionsDialog from '../../components/dashboard/UserActionsDialog'
 import api from '../../lib/api'
 
@@ -142,14 +140,10 @@ function UsersManagement() {
     )
   }, [users, search])
 
-  const boardUsers = useMemo(
-    () => users.filter((u) => u.role === 'JUNTA_DIRECTIVA' || u.role === 'ADMINISTRADOR'),
+  const assignableUsers = useMemo(
+    () => users.filter((u) => u.active).map((u) => ({ id: u.id, name: u.name, email: u.email })),
     [users],
   )
-
-  function handleBoardUserSaved(updated: BoardUser) {
-    setUsers((prev) => prev.map((u) => (u.id === updated.id ? { ...u, ...updated } : u)))
-  }
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12">
@@ -191,7 +185,7 @@ function UsersManagement() {
             className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white hover:bg-white/10"
           >
             <Users2 size={16} />
-            Gestionar Junta Directiva
+            Gestionar cargos
           </button>
         </div>
       </motion.div>
@@ -328,10 +322,10 @@ function UsersManagement() {
       )}
 
       {boardDialogOpen && (
-        <BoardManagementDialog
-          boardUsers={boardUsers}
+        <PositionsManagementDialog
+          users={assignableUsers}
           onClose={() => setBoardDialogOpen(false)}
-          onUserSaved={handleBoardUserSaved}
+          onChanged={loadUsers}
         />
       )}
     </div>

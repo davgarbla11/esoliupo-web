@@ -8,17 +8,9 @@ import api from '../lib/api'
 type PublicMember = {
   id: string
   name: string
-  role: 'SOCIO' | 'COLABORADOR_EXTERNO' | 'JUNTA_DIRECTIVA' | 'ADMINISTRADOR'
   position: string | null
   studies: string | null
   photoUrl: string | null
-}
-
-const roleFallbackLabels: Record<PublicMember['role'], string> = {
-  SOCIO: 'Socio',
-  COLABORADOR_EXTERNO: 'Colaborador externo',
-  JUNTA_DIRECTIVA: 'Junta Directiva',
-  ADMINISTRADOR: 'Administrador',
 }
 
 function WhoWeAre() {
@@ -93,7 +85,7 @@ function WhoWeAre() {
                     key={member.id}
                     index={index}
                     name={member.name}
-                    role={member.position || roleFallbackLabels[member.role]}
+                    role={member.position ?? ''}
                     studies={member.studies}
                     photo={member.photoUrl}
                   />
@@ -111,7 +103,7 @@ function WhoWeAre() {
                     key={member.id}
                     index={index}
                     name={member.name}
-                    role={member.position || roleFallbackLabels[member.role]}
+                    role="Colaborador externo"
                     studies={member.studies}
                     photo={member.photoUrl}
                   />
@@ -131,7 +123,7 @@ function WhoWeAre() {
                     key={member.id}
                     index={index}
                     name={member.name}
-                    role={roleFallbackLabels[member.role]}
+                    role="Socio"
                     studies={member.studies}
                     photo={member.photoUrl}
                   />

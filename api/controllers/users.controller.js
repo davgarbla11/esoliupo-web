@@ -10,7 +10,7 @@ function toPublicUser(user) {
     name: user.name,
     role: user.role,
     active: user.active,
-    position: user.position,
+    position: user.position?.name ?? null,
     studies: user.studies,
     photoUrl: user.photoUrl,
     createdAt: user.createdAt,
@@ -22,7 +22,10 @@ function generateTemporaryPassword() {
 }
 
 export async function listUsers(req, res) {
-  const users = await prisma.user.findMany({ orderBy: { createdAt: 'asc' } })
+  const users = await prisma.user.findMany({
+    include: { position: true },
+    orderBy: { createdAt: 'asc' },
+  })
   res.json({ users: users.map(toPublicUser) })
 }
 
@@ -43,7 +46,11 @@ export async function updateUserRole(req, res) {
     return res.status(404).json({ error: 'Usuario no encontrado.' })
   }
 
-  const updated = await prisma.user.update({ where: { id }, data: { role } })
+  const updated = await prisma.user.update({
+    where: { id },
+    data: { role },
+    include: { position: true },
+  })
   res.json({ user: toPublicUser(updated) })
 }
 
@@ -64,16 +71,19 @@ export async function updateUserStatus(req, res) {
     return res.status(404).json({ error: 'Usuario no encontrado.' })
   }
 
-  const updated = await prisma.user.update({ where: { id }, data: { active } })
+  const updated = await prisma.user.update({
+    where: { id },
+    data: { active },
+    include: { position: true },
+  })
   res.json({ user: toPublicUser(updated) })
 }
 
 export async function updateUserProfile(req, res) {
   const { id } = req.params
-  const { position, studies, photoUrl } = req.body
+  const { studies, photoUrl } = req.body
 
   const data = {}
-  if (position !== undefined) data.position = position?.trim() || null
   if (studies !== undefined) data.studies = studies?.trim() || null
   if (photoUrl !== undefined) data.photoUrl = photoUrl?.trim() || null
 
@@ -82,7 +92,11 @@ export async function updateUserProfile(req, res) {
     return res.status(404).json({ error: 'Usuario no encontrado.' })
   }
 
-  const updated = await prisma.user.update({ where: { id }, data })
+  const updated = await prisma.user.update({
+    where: { id },
+    data,
+    include: { position: true },
+  })
   res.json({ user: toPublicUser(updated) })
 }
 

@@ -1,19 +1,29 @@
+import prisma from '../lib/prisma.js'
 import { hasPermission, isAtLeast } from '../lib/rbac.js'
 import { verifyAuthToken } from '../lib/jwt.js'
 
-export function requireAuth(req, res, next) {
+export async function requireAuth(req, res, next) {
   const token = req.cookies?.token
 
   if (!token) {
     return res.status(401).json({ error: 'No autenticado.' })
   }
 
+  let payload
   try {
-    req.user = verifyAuthToken(token)
-    next()
+    payload = verifyAuthToken(token)
   } catch {
     return res.status(401).json({ error: 'Sesión inválida o caducada.' })
   }
+
+  const user = await prisma.user.findUnique({ where: { id: payload.sub } })
+
+  if (!user || !user.active) {
+    return res.status(401).json({ error: 'Sesión inválida o caducada.' })
+  }
+
+  req.user = { sub: user.id, role: user.role }
+  next()
 }
 
 export function requireRole(minRole) {

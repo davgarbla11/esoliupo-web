@@ -9,7 +9,4 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - esoliupo_db_data:/var/lib/postgresql/data
-
-volumes:
-  esoliupo_db_data:
+      - ./.pgdata:/var/lib/postgresql/data
