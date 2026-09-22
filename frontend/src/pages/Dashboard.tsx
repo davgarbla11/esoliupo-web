@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { Calendar, LogOut, User, Wrench } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import logoIcon from '../assets/icon-mark.png'
+import { type Role, useAuth } from '../context/AuthContext'
 
 const widgets = [
   {
@@ -21,7 +22,21 @@ const widgets = [
   },
 ]
 
+const roleLabels: Record<Role, string> = {
+  SOCIO: 'Socio',
+  JUNTA_DIRECTIVA: 'Junta Directiva',
+  ADMINISTRADOR: 'Administrador',
+}
+
 function Dashboard() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  async function handleLogout() {
+    await logout()
+    navigate('/')
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
       <header className="flex items-center justify-between border-b border-white/10 px-6 py-4">
@@ -29,13 +44,14 @@ function Dashboard() {
           <img src={logoIcon} alt="ESOLIUPO" className="h-8 w-auto" />
           <span className="text-lg font-semibold tracking-tight">ESOLIUPO</span>
         </div>
-        <Link
-          to="/"
+        <button
+          type="button"
+          onClick={handleLogout}
           className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white"
         >
           <LogOut size={16} />
           Cerrar sesión
-        </Link>
+        </button>
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-16">
@@ -45,14 +61,14 @@ function Dashboard() {
           transition={{ duration: 0.5 }}
         >
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-gold-400">
-            Panel de socio
+            Panel de socio · {user ? roleLabels[user.role] : ''}
           </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Bienvenido/a a ESOLIUPO
+            Bienvenido/a, {user?.name}
           </h1>
           <p className="mt-3 max-w-xl text-white/60">
-            Este es un panel de ejemplo. Cuando conectemos la API, aquí verás
-            tu información real como socio.
+            Este es un panel de ejemplo. Cuando construyamos cada sección,
+            aquí verás tu información real como socio.
           </p>
         </motion.div>
 

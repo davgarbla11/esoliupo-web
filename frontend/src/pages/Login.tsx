@@ -1,12 +1,15 @@
+import { isAxiosError } from 'axios'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Eye, EyeOff, Loader2, LogIn } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import logoIcon from '../assets/icon-mark.png'
 import HeroBackground from '../components/HeroBackground'
+import { useAuth } from '../context/AuthContext'
 
 function Login() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -14,7 +17,7 @@ function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault()
 
     if (!email || !password) {
@@ -25,9 +28,16 @@ function Login() {
     setError('')
     setLoading(true)
 
-    setTimeout(() => {
+    try {
+      await login(email, password)
       navigate('/dashboard')
-    }, 700)
+    } catch (err) {
+      const message = isAxiosError<{ error?: string }>(err)
+        ? err.response?.data.error
+        : undefined
+      setError(message ?? 'No se ha podido iniciar sesión. Inténtalo de nuevo.')
+      setLoading(false)
+    }
   }
 
   return (
