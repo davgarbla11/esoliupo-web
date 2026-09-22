@@ -141,4 +141,4 @@ dist
 # Uploaded user files (avatars, etc.)
 api/storage/
 
-grapgraphify-out/
+graphify-out/
