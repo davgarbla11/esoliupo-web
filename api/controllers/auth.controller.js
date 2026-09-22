@@ -65,6 +65,10 @@ export async function login(req, res) {
     return res.status(401).json({ error: 'Correo o contraseña incorrectos.' })
   }
 
+  if (!user.active) {
+    return res.status(403).json({ error: 'Tu cuenta ha sido dada de baja. Contacta con la asociación.' })
+  }
+
   const token = signAuthToken({ sub: user.id, role: user.role })
   res.cookie(COOKIE_NAME, token, cookieOptions())
   res.json({ user: toPublicUser(user) })

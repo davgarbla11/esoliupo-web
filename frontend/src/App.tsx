@@ -7,6 +7,7 @@ import PublicLayout from './layouts/PublicLayout'
 import Activities from './pages/Activities'
 import Contact from './pages/Contact'
 import DashboardHome from './pages/dashboard/DashboardHome'
+import UsersManagement from './pages/dashboard/UsersManagement'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
@@ -80,10 +81,7 @@ function App() {
             path="usuarios"
             element={
               <ProtectedRoute minRole="ADMINISTRADOR">
-                <ModulePlaceholder
-                  title="Usuarios y roles"
-                  description="Próximamente: gestiona usuarios y otorga roles."
-                />
+                <UsersManagement />
               </ProtectedRoute>
             }
           />
