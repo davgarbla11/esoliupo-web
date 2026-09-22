@@ -28,6 +28,7 @@ const modules = [
 
 const roleLabels: Record<Role, string> = {
   SOCIO: 'Socio',
+  COLABORADOR_EXTERNO: 'Colaborador externo',
   JUNTA_DIRECTIVA: 'Junta Directiva',
   ADMINISTRADOR: 'Administrador',
 }

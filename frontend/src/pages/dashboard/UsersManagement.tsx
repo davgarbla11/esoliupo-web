@@ -23,12 +23,14 @@ type ManagedUser = {
 
 const roleLabels: Record<Role, string> = {
   SOCIO: 'Socio',
+  COLABORADOR_EXTERNO: 'Colaborador externo',
   JUNTA_DIRECTIVA: 'Junta Directiva',
   ADMINISTRADOR: 'Administrador',
 }
 
 const roleBadgeStyles: Record<Role, string> = {
   SOCIO: 'bg-white/5 text-white/60',
+  COLABORADOR_EXTERNO: 'bg-white/5 text-white/60',
   JUNTA_DIRECTIVA: 'bg-white/10 text-white',
   ADMINISTRADOR: 'bg-gold-400/15 text-gold-400',
 }

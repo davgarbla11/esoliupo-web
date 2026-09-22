@@ -2,6 +2,7 @@ import type { Role } from '../context/AuthContext'
 
 const ROLE_RANK: Record<Role, number> = {
   SOCIO: 1,
+  COLABORADOR_EXTERNO: 1,
   JUNTA_DIRECTIVA: 2,
   ADMINISTRADOR: 3,
 }

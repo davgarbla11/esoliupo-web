@@ -8,7 +8,7 @@ import api from '../lib/api'
 type PublicMember = {
   id: string
   name: string
-  role: 'SOCIO' | 'JUNTA_DIRECTIVA' | 'ADMINISTRADOR'
+  role: 'SOCIO' | 'COLABORADOR_EXTERNO' | 'JUNTA_DIRECTIVA' | 'ADMINISTRADOR'
   position: string | null
   studies: string | null
   photoUrl: string | null
@@ -16,21 +16,26 @@ type PublicMember = {
 
 const roleFallbackLabels: Record<PublicMember['role'], string> = {
   SOCIO: 'Socio',
+  COLABORADOR_EXTERNO: 'Colaborador externo',
   JUNTA_DIRECTIVA: 'Junta Directiva',
   ADMINISTRADOR: 'Administrador',
 }
 
 function WhoWeAre() {
   const [board, setBoard] = useState<PublicMember[]>([])
+  const [collaborators, setCollaborators] = useState<PublicMember[]>([])
   const [members, setMembers] = useState<PublicMember[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
     api
-      .get<{ board: PublicMember[]; members: PublicMember[] }>('/members')
+      .get<{ board: PublicMember[]; collaborators: PublicMember[]; members: PublicMember[] }>(
+        '/members',
+      )
       .then((res) => {
         setBoard(res.data.board)
+        setCollaborators(res.data.collaborators)
         setMembers(res.data.members)
       })
       .catch((err) => {
@@ -96,6 +101,24 @@ function WhoWeAre() {
               </div>
             )}
           </div>
+
+          {collaborators.length > 0 && (
+            <div className="mt-16">
+              <h2 className="text-xl font-medium text-white">Colaboradores externos</h2>
+              <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {collaborators.map((member, index) => (
+                  <TeamMemberCard
+                    key={member.id}
+                    index={index}
+                    name={member.name}
+                    role={member.position || roleFallbackLabels[member.role]}
+                    studies={member.studies}
+                    photo={member.photoUrl}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="mt-16">
             <h2 className="text-xl font-medium text-white">Socios</h2>

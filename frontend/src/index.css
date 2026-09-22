@@ -26,6 +26,14 @@ h6 {
   font-family: var(--font-heading);
 }
 
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 @keyframes circuit-draw {
   to {
     stroke-dashoffset: -400;

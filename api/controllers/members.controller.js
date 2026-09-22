@@ -23,7 +23,11 @@ export async function listPublicMembers(req, res) {
     .sort((a, b) => (a.role === b.role ? 0 : a.role === ROLES.ADMINISTRADOR ? -1 : 1))
     .map(toPublicMember)
 
+  const collaborators = users
+    .filter((u) => u.role === ROLES.COLABORADOR_EXTERNO)
+    .map(toPublicMember)
+
   const members = users.filter((u) => u.role === ROLES.SOCIO).map(toPublicMember)
 
-  res.json({ board, members })
+  res.json({ board, collaborators, members })
 }
