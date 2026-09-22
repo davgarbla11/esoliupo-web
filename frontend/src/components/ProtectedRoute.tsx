@@ -1,9 +1,17 @@
 import { Loader2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
+import type { Role } from '../context/AuthContext'
 import { useAuth } from '../context/AuthContext'
+import { isAtLeast } from '../lib/rbac'
 
-function ProtectedRoute({ children }: { children: ReactNode }) {
+function ProtectedRoute({
+  children,
+  minRole,
+}: {
+  children: ReactNode
+  minRole?: Role
+}) {
   const { user, loading } = useAuth()
 
   if (loading) {
@@ -16,6 +24,10 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
 
   if (!user) {
     return <Navigate to="/login" replace />
+  }
+
+  if (minRole && !isAtLeast(user.role, minRole)) {
+    return <Navigate to="/dashboard" replace />
   }
 
   return children
