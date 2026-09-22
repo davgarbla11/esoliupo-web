@@ -1,50 +1,47 @@
+import { isAxiosError } from 'axios'
 import { motion } from 'framer-motion'
+import { Loader2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import TeamMemberCard from '../components/TeamMemberCard'
+import api from '../lib/api'
 
-const team = [
-  {
-    name: 'Laura Gómez',
-    role: 'Presidenta',
-    studies: 'Grado en Ingeniería Informática, UPO',
-  },
-  {
-    name: 'Marcos Ruiz',
-    role: 'Vicepresidente',
-    studies: 'Grado en Ingeniería Informática, UPO',
-  },
-  {
-    name: 'Elena Torres',
-    role: 'Secretaria',
-    studies: 'Doble Grado en Ingeniería Informática y ADE, UPO',
-  },
-  {
-    name: 'Adrián Navarro',
-    role: 'Tesorero',
-    studies: 'Grado en Ingeniería Informática, UPO',
-  },
-  {
-    name: 'Sofía Ramírez',
-    role: 'Vocal de Comunicación',
-    studies: 'Grado en Ingeniería Informática, UPO',
-  },
-  {
-    name: 'Pablo Moreno',
-    role: 'Vocal de Eventos',
-    studies: 'Grado en Ingeniería Informática, UPO',
-  },
-  {
-    name: 'Carmen Iglesias',
-    role: 'Vocal de Formación',
-    studies: 'Grado en Ingeniería Informática, UPO',
-  },
-  {
-    name: 'Javier Delgado',
-    role: 'Vocal de Proyectos',
-    studies: 'Grado en Ingeniería Informática, UPO',
-  },
-]
+type PublicMember = {
+  id: string
+  name: string
+  role: 'SOCIO' | 'JUNTA_DIRECTIVA' | 'ADMINISTRADOR'
+  position: string | null
+  studies: string | null
+  photoUrl: string | null
+}
+
+const roleFallbackLabels: Record<PublicMember['role'], string> = {
+  SOCIO: 'Socio',
+  JUNTA_DIRECTIVA: 'Junta Directiva',
+  ADMINISTRADOR: 'Administrador',
+}
 
 function WhoWeAre() {
+  const [board, setBoard] = useState<PublicMember[]>([])
+  const [members, setMembers] = useState<PublicMember[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    api
+      .get<{ board: PublicMember[]; members: PublicMember[] }>('/members')
+      .then((res) => {
+        setBoard(res.data.board)
+        setMembers(res.data.members)
+      })
+      .catch((err) => {
+        const message = isAxiosError<{ error?: string }>(err)
+          ? err.response?.data.error
+          : undefined
+        setError(message ?? 'No se ha podido cargar el equipo.')
+      })
+      .finally(() => setLoading(false))
+  }, [])
+
   return (
     <section className="mx-auto max-w-6xl px-6 py-32">
       <motion.div
@@ -66,11 +63,61 @@ function WhoWeAre() {
         </p>
       </motion.div>
 
-      <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {team.map((member, index) => (
-          <TeamMemberCard key={member.name} index={index} {...member} />
-        ))}
-      </div>
+      {loading && (
+        <div className="mt-16 flex justify-center">
+          <Loader2 className="animate-spin text-gold-400" size={28} />
+        </div>
+      )}
+
+      {!loading && error && (
+        <p className="mt-16 text-center text-white/50">{error}</p>
+      )}
+
+      {!loading && !error && (
+        <>
+          <div className="mt-16">
+            <h2 className="text-xl font-medium text-white">Junta Directiva</h2>
+            {board.length === 0 ? (
+              <p className="mt-3 text-white/50">
+                Próximamente: composición de la junta directiva.
+              </p>
+            ) : (
+              <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {board.map((member, index) => (
+                  <TeamMemberCard
+                    key={member.id}
+                    index={index}
+                    name={member.name}
+                    role={member.position || roleFallbackLabels[member.role]}
+                    studies={member.studies}
+                    photo={member.photoUrl}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="mt-16">
+            <h2 className="text-xl font-medium text-white">Socios</h2>
+            {members.length === 0 ? (
+              <p className="mt-3 text-white/50">Aún no hay socios registrados.</p>
+            ) : (
+              <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {members.map((member, index) => (
+                  <TeamMemberCard
+                    key={member.id}
+                    index={index}
+                    name={member.name}
+                    role={roleFallbackLabels[member.role]}
+                    studies={member.studies}
+                    photo={member.photoUrl}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </section>
   )
 }

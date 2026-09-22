@@ -1,8 +1,11 @@
 import { isAxiosError } from 'axios'
 import { motion } from 'framer-motion'
-import { CircleAlert, EllipsisVertical, Loader2, Search, ShieldCheck } from 'lucide-react'
+import { CircleAlert, EllipsisVertical, Loader2, Search, ShieldCheck, Users2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { type Role, useAuth } from '../../context/AuthContext'
+import BoardManagementDialog, {
+  type BoardUser,
+} from '../../components/dashboard/BoardManagementDialog'
 import UserActionsDialog from '../../components/dashboard/UserActionsDialog'
 import api from '../../lib/api'
 
@@ -12,6 +15,9 @@ type ManagedUser = {
   name: string
   role: Role
   active: boolean
+  position: string | null
+  studies: string | null
+  photoUrl: string | null
   createdAt: string
 }
 
@@ -66,6 +72,7 @@ function UsersManagement() {
   const [search, setSearch] = useState('')
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [dialogUser, setDialogUser] = useState<ManagedUser | null>(null)
+  const [boardDialogOpen, setBoardDialogOpen] = useState(false)
   const [rowMessages, setRowMessages] = useState<
     Record<string, { type: 'success' | 'error'; text: string }>
   >({})
@@ -133,6 +140,15 @@ function UsersManagement() {
     )
   }, [users, search])
 
+  const boardUsers = useMemo(
+    () => users.filter((u) => u.role === 'JUNTA_DIRECTIVA' || u.role === 'ADMINISTRADOR'),
+    [users],
+  )
+
+  function handleBoardUserSaved(updated: BoardUser) {
+    setUsers((prev) => prev.map((u) => (u.id === updated.id ? { ...u, ...updated } : u)))
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-12">
       <motion.div
@@ -153,18 +169,28 @@ function UsersManagement() {
           </p>
         </div>
 
-        <div className="relative w-full sm:w-64">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
-          />
-          <input
-            type="text"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Buscar por nombre o correo"
-            className="w-full rounded-lg border border-white/10 bg-black/30 py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/30 focus:border-gold-400 focus:outline-none"
-          />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="relative w-full sm:w-64">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
+            />
+            <input
+              type="text"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Buscar por nombre o correo"
+              className="w-full rounded-lg border border-white/10 bg-black/30 py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/30 focus:border-gold-400 focus:outline-none"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setBoardDialogOpen(true)}
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white hover:bg-white/10"
+          >
+            <Users2 size={16} />
+            Gestionar Junta Directiva
+          </button>
         </div>
       </motion.div>
 
@@ -296,6 +322,14 @@ function UsersManagement() {
           user={dialogUser}
           onClose={() => setDialogUser(null)}
           onStatusChange={handleStatusChange}
+        />
+      )}
+
+      {boardDialogOpen && (
+        <BoardManagementDialog
+          boardUsers={boardUsers}
+          onClose={() => setBoardDialogOpen(false)}
+          onUserSaved={handleBoardUserSaved}
         />
       )}
     </div>

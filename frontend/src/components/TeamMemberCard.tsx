@@ -3,8 +3,8 @@ import { motion } from 'framer-motion'
 type TeamMemberCardProps = {
   name: string
   role: string
-  studies: string
-  photo?: string
+  studies?: string | null
+  photo?: string | null
   index: number
 }
 
@@ -43,7 +43,9 @@ function TeamMemberCard({ name, role, studies, photo, index }: TeamMemberCardPro
       <p className="mt-1 text-sm font-medium uppercase tracking-wide text-gold-400">
         {role}
       </p>
-      <p className="mt-2 text-sm leading-relaxed text-white/50">{studies}</p>
+      {studies && (
+        <p className="mt-2 text-sm leading-relaxed text-white/50">{studies}</p>
+      )}
     </motion.div>
   )
 }

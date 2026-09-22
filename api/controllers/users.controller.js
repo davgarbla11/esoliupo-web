@@ -10,6 +10,9 @@ function toPublicUser(user) {
     name: user.name,
     role: user.role,
     active: user.active,
+    position: user.position,
+    studies: user.studies,
+    photoUrl: user.photoUrl,
     createdAt: user.createdAt,
   }
 }
@@ -62,6 +65,24 @@ export async function updateUserStatus(req, res) {
   }
 
   const updated = await prisma.user.update({ where: { id }, data: { active } })
+  res.json({ user: toPublicUser(updated) })
+}
+
+export async function updateUserProfile(req, res) {
+  const { id } = req.params
+  const { position, studies, photoUrl } = req.body
+
+  const data = {}
+  if (position !== undefined) data.position = position?.trim() || null
+  if (studies !== undefined) data.studies = studies?.trim() || null
+  if (photoUrl !== undefined) data.photoUrl = photoUrl?.trim() || null
+
+  const user = await prisma.user.findUnique({ where: { id } })
+  if (!user) {
+    return res.status(404).json({ error: 'Usuario no encontrado.' })
+  }
+
+  const updated = await prisma.user.update({ where: { id }, data })
   res.json({ user: toPublicUser(updated) })
 }
 
