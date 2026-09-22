@@ -64,7 +64,7 @@ function Navbar() {
           </ul>
 
           <NavLink
-            to="/area-socio"
+            to="/login"
             className="inline-flex items-center gap-1.5 rounded-full bg-gold-400 px-4 py-2 text-sm font-semibold text-neutral-900 shadow-[0_0_0_1px_rgba(0,0,0,0.05)] transition-transform hover:scale-105"
           >
             <UserRound size={16} />
@@ -100,7 +100,7 @@ function Navbar() {
           ))}
           <li className="mt-2">
             <NavLink
-              to="/area-socio"
+              to="/login"
               className="flex items-center justify-center gap-1.5 rounded-full bg-gold-400 px-4 py-2.5 text-sm font-semibold text-neutral-900"
             >
               <UserRound size={16} />
