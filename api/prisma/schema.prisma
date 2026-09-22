@@ -9,7 +9,8 @@ datasource db {
 
 enum Role {
   SOCIO
-  ADMIN
+  JUNTA_DIRECTIVA
+  ADMINISTRADOR
 }
 
 model User {

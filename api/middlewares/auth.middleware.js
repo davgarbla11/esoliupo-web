@@ -1,3 +1,4 @@
+import { hasPermission, isAtLeast } from '../lib/rbac.js'
 import { verifyAuthToken } from '../lib/jwt.js'
 
 export function requireAuth(req, res, next) {
@@ -15,9 +16,18 @@ export function requireAuth(req, res, next) {
   }
 }
 
-export function requireRole(...roles) {
+export function requireRole(minRole) {
   return (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.role)) {
+    if (!req.user || !isAtLeast(req.user.role, minRole)) {
+      return res.status(403).json({ error: 'No tienes permisos para esto.' })
+    }
+    next()
+  }
+}
+
+export function requirePermission(permission) {
+  return (req, res, next) => {
+    if (!req.user || !hasPermission(req.user.role, permission)) {
       return res.status(403).json({ error: 'No tienes permisos para esto.' })
     }
     next()
