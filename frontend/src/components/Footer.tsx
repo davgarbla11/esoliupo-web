@@ -22,8 +22,8 @@ function InstagramIcon({ size = 18 }: { size?: number }) {
 
 function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-slate-50">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-slate-500 sm:flex-row">
+    <footer className="border-t border-neutral-200 bg-neutral-50">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-neutral-500 sm:flex-row">
         <p>
           © {new Date().getFullYear()} ESOLIUPO · Universidad Pablo de
           Olavide
@@ -32,7 +32,7 @@ function Footer() {
           <a
             href="mailto:esoliupo@upo.es"
             aria-label="Correo"
-            className="hover:text-slate-900"
+            className="hover:text-gold-600"
           >
             <Mail size={18} />
           </a>
@@ -41,7 +41,7 @@ function Footer() {
             target="_blank"
             rel="noreferrer"
             aria-label="Instagram"
-            className="hover:text-slate-900"
+            className="hover:text-gold-600"
           >
             <InstagramIcon size={18} />
           </a>

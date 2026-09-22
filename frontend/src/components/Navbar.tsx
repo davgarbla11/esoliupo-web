@@ -13,9 +13,9 @@ function Navbar() {
   const [open, setOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/80 backdrop-blur-sm">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <NavLink to="/" className="text-lg font-semibold tracking-tight">
+        <NavLink to="/" className="text-lg font-semibold tracking-tight text-neutral-900">
           ESOLIUPO
         </NavLink>
 
@@ -25,10 +25,10 @@ function Navbar() {
               <NavLink
                 to={link.to}
                 className={({ isActive }) =>
-                  `text-sm font-medium transition-colors ${
+                  `border-b-2 py-1 text-sm font-medium transition-colors ${
                     isActive
-                      ? 'text-slate-900'
-                      : 'text-slate-500 hover:text-slate-900'
+                      ? 'border-gold-400 text-neutral-900'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`
                 }
               >
@@ -40,7 +40,7 @@ function Navbar() {
 
         <button
           type="button"
-          className="md:hidden"
+          className="text-neutral-900 md:hidden"
           onClick={() => setOpen((v) => !v)}
           aria-label="Abrir menú"
         >
@@ -49,7 +49,7 @@ function Navbar() {
       </nav>
 
       {open && (
-        <ul className="flex flex-col gap-1 border-t border-slate-200 px-6 py-4 md:hidden">
+        <ul className="flex flex-col gap-1 border-t border-neutral-200 px-6 py-4 md:hidden">
           {links.map((link) => (
             <li key={link.to}>
               <NavLink
@@ -58,8 +58,8 @@ function Navbar() {
                 className={({ isActive }) =>
                   `block rounded-md px-3 py-2 text-sm font-medium ${
                     isActive
-                      ? 'bg-slate-100 text-slate-900'
-                      : 'text-slate-500'
+                      ? 'bg-gold-50 text-neutral-900'
+                      : 'text-neutral-500'
                   }`
                 }
               >
