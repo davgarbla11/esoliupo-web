@@ -54,13 +54,13 @@ function WhoWeAre() {
         className="max-w-2xl"
       >
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-gold-400">
-          ESOLIUPO
+          Conócenos
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
           Quiénes somos
         </h1>
         <p className="mt-4 text-white/60">
-          La junta de ESOLIUPO está formada por estudiantes de la Universidad
+          La asociación ESOLIUPO está formada por estudiantes de la Universidad
           Pablo de Olavide que dedican su tiempo a que la asociación siga
           creciendo.
         </p>
