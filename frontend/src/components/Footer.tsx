@@ -1,4 +1,5 @@
 import { Mail } from 'lucide-react'
+import { useLocation } from 'react-router-dom'
 
 function InstagramIcon({ size = 18 }: { size?: number }) {
   return (
@@ -21,9 +22,18 @@ function InstagramIcon({ size = 18 }: { size?: number }) {
 }
 
 function Footer() {
+  const { pathname } = useLocation()
+  const isHome = pathname === '/'
+
   return (
-    <footer className="border-t border-neutral-200 bg-neutral-50">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-neutral-500 sm:flex-row">
+    <footer
+      className={`relative border-t ${
+        isHome
+          ? 'border-white/10 bg-transparent text-white/50'
+          : 'border-neutral-200 bg-neutral-50 text-neutral-500'
+      }`}
+    >
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm sm:flex-row">
         <p>
           © {new Date().getFullYear()} ESOLIUPO · Universidad Pablo de
           Olavide
@@ -32,7 +42,7 @@ function Footer() {
           <a
             href="mailto:esoliupo@upo.es"
             aria-label="Correo"
-            className="hover:text-gold-600"
+            className={isHome ? 'hover:text-gold-400' : 'hover:text-gold-600'}
           >
             <Mail size={18} />
           </a>
@@ -41,7 +51,7 @@ function Footer() {
             target="_blank"
             rel="noreferrer"
             aria-label="Instagram"
-            className="hover:text-gold-600"
+            className={isHome ? 'hover:text-gold-400' : 'hover:text-gold-600'}
           >
             <InstagramIcon size={18} />
           </a>
