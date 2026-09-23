@@ -5,6 +5,7 @@ import DashboardLayout from './layouts/DashboardLayout'
 import PublicLayout from './layouts/PublicLayout'
 import Activities from './pages/Activities'
 import Contact from './pages/Contact'
+import ContactMessages from './pages/dashboard/ContactMessages'
 import DashboardHome from './pages/dashboard/DashboardHome'
 import EventEditor from './pages/dashboard/EventEditor'
 import EventsManagement from './pages/dashboard/EventsManagement'
@@ -58,6 +59,14 @@ function App() {
             element={
               <ProtectedRoute minRole="JUNTA_DIRECTIVA">
                 <MembershipRequests />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="mensajes"
+            element={
+              <ProtectedRoute minRole="JUNTA_DIRECTIVA">
+                <ContactMessages />
               </ProtectedRoute>
             }
           />

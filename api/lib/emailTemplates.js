@@ -17,6 +17,22 @@ export function formatEventDate(date) {
   return DATE_LABEL.format(new Date(date))
 }
 
+function escapeHtml(value) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function toHtmlParagraphs(value) {
+  return escapeHtml(value)
+    .split(/\n+/)
+    .map((line) => `<p>${line}</p>`)
+    .join('')
+}
+
 export function renderEmailLayout({ eyebrow, heading, preheader, bodyHtml, ctaLabel, ctaUrl }) {
   return `<!doctype html>
 <html lang="es">
@@ -176,6 +192,24 @@ export function renderLeaveApprovedEmail({ name }) {
     bodyHtml: `
       <p>Tu solicitud de baja como socio de ESOLIUPO ha sido aprobada y se ha procesado correctamente.</p>
       <p>Si en el futuro quieres volver a unirte, siempre serás bienvenido/a.</p>
+    `,
+  })
+}
+
+export function renderContactReplyEmail({ name, message, reply }) {
+  return renderEmailLayout({
+    eyebrow: 'Respuesta a tu consulta',
+    heading: `Hola, ${escapeHtml(name)}`,
+    preheader: 'La Junta Directiva ha respondido a tu consulta',
+    bodyHtml: `
+      <p>La Junta Directiva de ESOLIUPO ha respondido a tu consulta:</p>
+      <div style="margin:16px 0; padding:14px 16px; background-color:#faf7ee; border-radius:12px; font-size:14px; color:${INK};">
+        ${toHtmlParagraphs(reply)}
+      </div>
+      <p style="color:${MUTED}; font-size:13px;">Tu consulta original:</p>
+      <blockquote style="margin:0; padding-left:14px; border-left:2px solid ${BORDER}; color:${MUTED}; font-size:13px;">
+        ${toHtmlParagraphs(message)}
+      </blockquote>
     `,
   })
 }
