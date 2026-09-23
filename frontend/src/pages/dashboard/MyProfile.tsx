@@ -5,6 +5,7 @@ import {
   Camera,
   Check,
   CircleAlert,
+  Clock,
   GraduationCap,
   Loader2,
   MessageCircle,
@@ -12,7 +13,6 @@ import {
   UserX,
 } from 'lucide-react'
 import { type ChangeEvent, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { type Role, useAuth } from '../../context/AuthContext'
 import api from '../../lib/api'
 
@@ -38,8 +38,7 @@ function getErrorMessage(err: unknown, fallback: string) {
 }
 
 function MyProfile() {
-  const { user, refreshUser, logout } = useAuth()
-  const navigate = useNavigate()
+  const { user, refreshUser } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [avatarUploading, setAvatarUploading] = useState(false)
@@ -53,6 +52,7 @@ function MyProfile() {
   const [confirmingLeave, setConfirmingLeave] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [leaveError, setLeaveError] = useState('')
+  const [leaveRequested, setLeaveRequested] = useState(false)
 
   if (!user) return null
 
@@ -98,11 +98,12 @@ function MyProfile() {
     setLeaving(true)
     setLeaveError('')
     try {
-      await api.patch(`/users/${userId}/status`, { active: false })
-      await logout()
-      navigate('/')
+      await api.post('/leave-requests')
+      setLeaveRequested(true)
+      setConfirmingLeave(false)
     } catch (err) {
-      setLeaveError(getErrorMessage(err, 'No se ha podido procesar la baja.'))
+      setLeaveError(getErrorMessage(err, 'No se ha podido enviar la solicitud de baja.'))
+    } finally {
       setLeaving(false)
     }
   }
@@ -249,8 +250,8 @@ function MyProfile() {
       >
         <h2 className="text-sm font-medium text-red-300">Darse de baja</h2>
         <p className="mt-1 text-sm text-white/50">
-          Dejarás de ser socio de ESOLIUPO y perderás el acceso a este panel. Un
-          Administrador puede reactivar tu cuenta más adelante si cambias de opinión.
+          Se enviará una solicitud a la Junta Directiva, que revisará tu baja como
+          socio de ESOLIUPO.
         </p>
 
         {leaveError && (
@@ -260,14 +261,19 @@ function MyProfile() {
           </p>
         )}
 
-        {!confirmingLeave ? (
+        {leaveRequested ? (
+          <p className="mt-4 flex items-center gap-2 text-sm text-white/60">
+            <Clock size={14} />
+            Solicitud enviada. La Junta Directiva la revisará próximamente.
+          </p>
+        ) : !confirmingLeave ? (
           <button
             type="button"
             onClick={() => setConfirmingLeave(true)}
             className="mt-4 inline-flex items-center gap-2 rounded-full border border-red-400/30 px-4 py-2 text-sm font-semibold text-red-300 hover:bg-red-400/10"
           >
             <UserX size={16} />
-            Darme de baja de la asociación
+            Solicitar baja de la asociación
           </button>
         ) : (
           <div className="mt-4 flex gap-2">
@@ -286,7 +292,7 @@ function MyProfile() {
               className="flex flex-1 items-center justify-center gap-2 rounded-full bg-red-500/90 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 disabled:opacity-60"
             >
               {leaving && <Loader2 size={14} className="animate-spin" />}
-              Confirmar baja
+              Confirmar solicitud
             </button>
           </div>
         )}

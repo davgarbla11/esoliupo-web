@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import authRoutes from './auth.routes.js'
+import leaveRequestsRoutes from './leaveRequests.routes.js'
 import membershipRequestsRoutes from './membershipRequests.routes.js'
 import membersRoutes from './members.routes.js'
 import positionsRoutes from './positions.routes.js'
@@ -13,5 +14,6 @@ router.use('/users', usersRoutes)
 router.use('/members', membersRoutes)
 router.use('/positions', positionsRoutes)
 router.use('/membership-requests', membershipRequestsRoutes)
+router.use('/leave-requests', leaveRequestsRoutes)
 
 export default router
