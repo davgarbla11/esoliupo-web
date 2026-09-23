@@ -163,9 +163,9 @@ function Login() {
                 />
                 Recuérdame
               </label>
-              <a href="#" className="text-white/60 hover:text-gold-400">
+              <Link to="/olvide-contrasena" className="text-white/60 hover:text-gold-400">
                 ¿Olvidaste tu contraseña?
-              </a>
+              </Link>
             </div>
 
             {error && <p className="text-sm text-red-400">{error}</p>}

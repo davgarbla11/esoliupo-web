@@ -1,11 +1,20 @@
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
+import { renderPasswordResetLinkEmail } from '../lib/emailTemplates.js'
 import { verifyGoogleToken } from '../lib/googleAuth.js'
+import { sendMail } from '../lib/mailer.js'
 import prisma from '../lib/prisma.js'
 import { signAuthToken } from '../lib/jwt.js'
 
 const COOKIE_NAME = 'token'
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const SITE_URL = process.env.SITE_URL ?? 'https://esoliupo.org'
+
+function hashToken(token) {
+  return crypto.createHash('sha256').update(token).digest('hex')
+}
 
 function cookieOptions() {
   return {
@@ -135,6 +144,80 @@ export async function changePassword(req, res) {
   })
 
   res.json({ user: toPublicUser(updated) })
+}
+
+export async function forgotPassword(req, res) {
+  const { email } = req.body
+
+  if (!email?.trim() || !EMAIL_PATTERN.test(email.trim())) {
+    return res.status(400).json({ error: 'Introduce un correo válido.' })
+  }
+
+  const user = await prisma.user.findUnique({ where: { email: email.trim() } })
+
+  if (user?.active) {
+    await prisma.passwordResetToken.deleteMany({
+      where: { userId: user.id, usedAt: null },
+    })
+
+    const rawToken = crypto.randomBytes(32).toString('hex')
+    await prisma.passwordResetToken.create({
+      data: {
+        userId: user.id,
+        tokenHash: hashToken(rawToken),
+        expiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
+      },
+    })
+
+    const resetUrl = `${SITE_URL}/restablecer-contrasena?token=${rawToken}`
+    try {
+      await sendMail({
+        to: user.email,
+        subject: 'ESOLIUPO — restablecer tu contraseña',
+        html: renderPasswordResetLinkEmail({ name: user.name, resetUrl }),
+      })
+    } catch (err) {
+      console.error('[mail] no se ha podido enviar el enlace de restablecimiento a', user.email, err)
+    }
+  }
+
+  res.json({ message: 'Si el correo existe en nuestro sistema, recibirás un enlace para restablecer tu contraseña.' })
+}
+
+export async function resetPasswordWithToken(req, res) {
+  const { token, newPassword } = req.body
+
+  if (!token || !newPassword) {
+    return res.status(400).json({ error: 'Faltan datos.' })
+  }
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 8 caracteres.' })
+  }
+
+  const tokenHash = hashToken(token)
+  const resetToken = await prisma.passwordResetToken.findUnique({ where: { tokenHash } })
+  if (!resetToken) {
+    return res.status(400).json({ error: 'El enlace no es válido o ha caducado.' })
+  }
+
+  const claim = await prisma.passwordResetToken.updateMany({
+    where: { tokenHash, usedAt: null, expiresAt: { gt: new Date() } },
+    data: { usedAt: new Date() },
+  })
+  if (claim.count === 0) {
+    return res.status(400).json({ error: 'El enlace no es válido o ha caducado.' })
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 10)
+  await prisma.user.update({
+    where: { id: resetToken.userId },
+    data: { passwordHash, mustChangePassword: false },
+  })
+  await prisma.passwordResetToken.deleteMany({
+    where: { userId: resetToken.userId, id: { not: resetToken.id } },
+  })
+
+  res.json({ message: 'Contraseña actualizada. Ya puedes iniciar sesión.' })
 }
 
 export async function me(req, res) {

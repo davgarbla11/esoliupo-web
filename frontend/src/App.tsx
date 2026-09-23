@@ -17,10 +17,12 @@ import MembershipRequests from './pages/dashboard/MembershipRequests'
 import MyProfile from './pages/dashboard/MyProfile'
 import SuperadminPanel from './pages/dashboard/SuperadminPanel'
 import UsersManagement from './pages/dashboard/UsersManagement'
+import ForgotPassword from './pages/ForgotPassword'
 import Home from './pages/Home'
 import JoinRequest from './pages/JoinRequest'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
+import ResetPassword from './pages/ResetPassword'
 import WhoWeAre from './pages/WhoWeAre'
 
 function App() {
@@ -30,6 +32,8 @@ function App() {
         <ForcePasswordChangeGate>
           <Routes>
             <Route path="login" element={<Login />} />
+            <Route path="olvide-contrasena" element={<ForgotPassword />} />
+            <Route path="restablecer-contrasena" element={<ResetPassword />} />
 
             <Route
               path="dashboard"

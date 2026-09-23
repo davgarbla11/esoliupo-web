@@ -221,6 +221,23 @@ export function renderPasswordResetEmail({ name, email, password }) {
   })
 }
 
+export function renderPasswordResetLinkEmail({ name, resetUrl }) {
+  return renderEmailLayout({
+    eyebrow: 'Restablecer contraseña',
+    heading: `Hola, ${escapeHtml(name)}`,
+    preheader: 'Enlace para restablecer tu contraseña de ESOLIUPO',
+    bodyHtml: `
+      <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta.</p>
+      <p>El enlace es válido durante 1 hora y solo se puede usar una vez.</p>
+      <p style="color:${MUTED}; font-size:13px;">
+        Si no has sido tú, ignora este correo — tu contraseña actual seguirá funcionando.
+      </p>
+    `,
+    ctaLabel: 'Restablecer mi contraseña',
+    ctaUrl: resetUrl,
+  })
+}
+
 export function renderContactReplyEmail({ name, message, reply }) {
   return renderEmailLayout({
     eyebrow: 'Respuesta a tu consulta',
