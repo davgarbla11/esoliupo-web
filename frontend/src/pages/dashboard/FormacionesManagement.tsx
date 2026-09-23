@@ -46,6 +46,7 @@ function ManagementView() {
   const [deleting, setDeleting] = useState(false)
   const [togglingId, setTogglingId] = useState<string | null>(null)
   const [enrollingId, setEnrollingId] = useState<string | null>(null)
+  const [actionError, setActionError] = useState('')
 
   useEffect(() => {
     loadTrainings()
@@ -90,6 +91,7 @@ function ManagementView() {
 
   async function handleToggleEnrollment(training: EsoliupoTraining) {
     setEnrollingId(training.id)
+    setActionError('')
     try {
       if (training.enrolled) {
         await api.delete(`/trainings/${training.id}/enroll`)
@@ -107,8 +109,8 @@ function ManagementView() {
             : t,
         ),
       )
-    } catch {
-      // ignore — row keeps its state, user can retry
+    } catch (err) {
+      setActionError(getErrorMessage(err, 'No se ha podido actualizar la inscripción.'))
     } finally {
       setEnrollingId(null)
     }
@@ -154,6 +156,13 @@ function ManagementView() {
           Nueva formación
         </button>
       </motion.div>
+
+      {actionError && (
+        <p className="mt-4 flex items-center gap-2 text-sm text-red-400">
+          <CircleAlert size={14} />
+          {actionError}
+        </p>
+      )}
 
       {loading && (
         <div className="mt-16 flex justify-center">
@@ -350,6 +359,7 @@ function EnrollmentView() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [pendingId, setPendingId] = useState<string | null>(null)
+  const [actionError, setActionError] = useState('')
 
   useEffect(() => {
     loadTrainings()
@@ -370,6 +380,7 @@ function EnrollmentView() {
 
   async function handleEnroll(training: EsoliupoTraining) {
     setPendingId(training.id)
+    setActionError('')
     try {
       await api.post(`/trainings/${training.id}/enroll`)
       setTrainings((prev) =>
@@ -379,8 +390,8 @@ function EnrollmentView() {
             : t,
         ),
       )
-    } catch {
-      // ignore — button stays in its previous state, user can retry
+    } catch (err) {
+      setActionError(getErrorMessage(err, 'No se ha podido completar la inscripción.'))
     } finally {
       setPendingId(null)
     }
@@ -388,6 +399,7 @@ function EnrollmentView() {
 
   async function handleUnenroll(training: EsoliupoTraining) {
     setPendingId(training.id)
+    setActionError('')
     try {
       await api.delete(`/trainings/${training.id}/enroll`)
       setTrainings((prev) =>
@@ -397,8 +409,8 @@ function EnrollmentView() {
             : t,
         ),
       )
-    } catch {
-      // ignore
+    } catch (err) {
+      setActionError(getErrorMessage(err, 'No se ha podido cancelar la inscripción.'))
     } finally {
       setPendingId(null)
     }
@@ -423,6 +435,13 @@ function EnrollmentView() {
       )}
 
       {!loading && loadError && <p className="mt-8 text-white/50">{loadError}</p>}
+
+      {actionError && (
+        <p className="mt-4 flex items-center gap-2 text-sm text-red-400">
+          <CircleAlert size={14} />
+          {actionError}
+        </p>
+      )}
 
       {!loading && !loadError && (
         <div className="mt-8 space-y-4">
