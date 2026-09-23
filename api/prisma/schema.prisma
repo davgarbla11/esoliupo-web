@@ -21,12 +21,14 @@ model User {
   name                String
   role                Role                 @default(SOCIO)
   active              Boolean              @default(true)
+  notifyEvents        Boolean              @default(true)
   studies             String?
   photoUrl            String?
   position            Position?
   leaveRequests       LeaveRequest[]
   trainingsTaught     Training[]           @relation("TrainingInstructor")
   trainingEnrollments TrainingEnrollment[]
+  auditLogs           AuditLog[]
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 
@@ -85,9 +87,10 @@ model Event {
   date          DateTime
   content       String   @default("")
   coverImageUrl String?
-  published     Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  published     Boolean   @default(false)
+  notifiedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@map("events")
 }
@@ -101,6 +104,7 @@ model Training {
   instructorId String
   instructor   User                 @relation("TrainingInstructor", fields: [instructorId], references: [id])
   published    Boolean              @default(false)
+  notifiedAt   DateTime?
   enrollments  TrainingEnrollment[]
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
@@ -118,4 +122,20 @@ model TrainingEnrollment {
 
   @@unique([trainingId, userId])
   @@map("training_enrollments")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userEmail  String
+  role       Role
+  ip         String
+  method     String
+  path       String
+  statusCode Int
+  createdAt  DateTime @default(now())
+
+  @@map("audit_logs")
+  @@index([createdAt])
 }

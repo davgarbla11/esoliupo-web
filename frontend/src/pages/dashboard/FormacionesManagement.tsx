@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import PublishNotifyDialog from '../../components/dashboard/PublishNotifyDialog'
 import TrainingEnrolleesDialog from '../../components/dashboard/TrainingEnrolleesDialog'
 import TrainingFormDialog from '../../components/dashboard/TrainingFormDialog'
 import { useAuth } from '../../context/AuthContext'
@@ -47,6 +48,7 @@ function ManagementView() {
   const [togglingId, setTogglingId] = useState<string | null>(null)
   const [enrollingId, setEnrollingId] = useState<string | null>(null)
   const [actionError, setActionError] = useState('')
+  const [publishTarget, setPublishTarget] = useState<EsoliupoTraining | null>(null)
 
   useEffect(() => {
     loadTrainings()
@@ -75,11 +77,16 @@ function ManagementView() {
   }
 
   async function handleTogglePublished(training: EsoliupoTraining) {
+    if (!training.published) {
+      setPublishTarget(training)
+      return
+    }
+
     setTogglingId(training.id)
     try {
       const res = await api.patch<{ training: EsoliupoTraining }>(
         `/trainings/${training.id}`,
-        { published: !training.published },
+        { published: false },
       )
       setTrainings((prev) => prev.map((t) => (t.id === training.id ? res.data.training : t)))
     } catch {
@@ -87,6 +94,23 @@ function ManagementView() {
     } finally {
       setTogglingId(null)
     }
+  }
+
+  async function handlePublish(training: EsoliupoTraining) {
+    const res = await api.patch<{ training: EsoliupoTraining }>(`/trainings/${training.id}`, {
+      published: true,
+    })
+    setTrainings((prev) => prev.map((t) => (t.id === training.id ? res.data.training : t)))
+  }
+
+  async function handlePublishAndNotify(training: EsoliupoTraining) {
+    await handlePublish(training)
+    await api.post(`/trainings/${training.id}/notify`)
+    setTrainings((prev) =>
+      prev.map((t) =>
+        t.id === training.id ? { ...t, notifiedAt: new Date().toISOString() } : t,
+      ),
+    )
   }
 
   async function handleToggleEnrollment(training: EsoliupoTraining) {
@@ -348,6 +372,16 @@ function ManagementView() {
         <TrainingEnrolleesDialog
           training={viewingEnrollees}
           onClose={() => setViewingEnrollees(null)}
+        />
+      )}
+
+      {publishTarget && (
+        <PublishNotifyDialog
+          title={publishTarget.title}
+          notifiedAt={publishTarget.notifiedAt}
+          onClose={() => setPublishTarget(null)}
+          onPublishOnly={() => handlePublish(publishTarget)}
+          onPublishAndNotify={() => handlePublishAndNotify(publishTarget)}
         />
       )}
     </div>

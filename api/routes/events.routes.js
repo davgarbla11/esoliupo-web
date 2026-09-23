@@ -6,11 +6,13 @@ import {
   getEvent,
   listEvents,
   listPublicEvents,
+  notifyEventPublished,
   updateEvent,
   uploadEventContentImage,
   uploadEventCover,
 } from '../controllers/events.controller.js'
 import { requireAuth, requirePermission } from '../middlewares/auth.middleware.js'
+import { mailRateLimit, requireSameOrigin } from '../middlewares/mailGuard.middleware.js'
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
@@ -40,5 +42,6 @@ router.get('/:id', getEvent)
 router.patch('/:id', updateEvent)
 router.delete('/:id', deleteEvent)
 router.post('/:id/cover', upload.single('cover'), uploadEventCover)
+router.post('/:id/notify', requireSameOrigin, mailRateLimit, notifyEventPublished)
 
 export default router

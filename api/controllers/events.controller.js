@@ -1,6 +1,8 @@
 import crypto from 'crypto'
 import fs from 'fs/promises'
 import sharp from 'sharp'
+import { renderEventPublishedEmail } from '../lib/emailTemplates.js'
+import { sendMail } from '../lib/mailer.js'
 import prisma from '../lib/prisma.js'
 import {
   eventContentImagePath,
@@ -19,6 +21,7 @@ function toPublicEvent(event) {
     content: event.content,
     coverImageUrl: event.coverImageUrl,
     published: event.published,
+    notifiedAt: event.notifiedAt,
     createdAt: event.createdAt,
     updatedAt: event.updatedAt,
   }
@@ -112,6 +115,44 @@ export async function updateEvent(req, res) {
 
   const event = await prisma.event.update({ where: { id }, data })
   res.json({ event: toPublicEvent(event) })
+}
+
+export async function notifyEventPublished(req, res) {
+  const { id } = req.params
+
+  const event = await prisma.event.findUnique({ where: { id } })
+  if (!event) {
+    return res.status(404).json({ error: 'Evento no encontrado.' })
+  }
+  if (!event.published) {
+    return res.status(400).json({ error: 'El evento no está publicado.' })
+  }
+
+  const recipients = await prisma.user.findMany({
+    where: { active: true, notifyEvents: true },
+    select: { email: true },
+  })
+
+  const html = renderEventPublishedEmail({
+    title: event.title,
+    date: event.date,
+    place: event.place,
+    description: event.description,
+  })
+
+  let sent = 0
+  for (const recipient of recipients) {
+    try {
+      await sendMail({ to: recipient.email, subject: `Nuevo evento: ${event.title}`, html })
+      sent += 1
+    } catch (err) {
+      console.error('[mail] no se ha podido notificar a', recipient.email, err)
+    }
+  }
+
+  await prisma.event.update({ where: { id }, data: { notifiedAt: new Date() } })
+
+  res.json({ sent, total: recipients.length })
 }
 
 export async function deleteEvent(req, res) {

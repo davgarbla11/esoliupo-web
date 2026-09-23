@@ -1,5 +1,14 @@
 import { isAxiosError } from 'axios'
-import { Check, CircleAlert, Copy, GraduationCap, Loader2, Trash2, X } from 'lucide-react'
+import {
+  Check,
+  CircleAlert,
+  Dices,
+  GraduationCap,
+  Loader2,
+  Mail,
+  Trash2,
+  X,
+} from 'lucide-react'
 import { useState } from 'react'
 import api from '../../lib/api'
 
@@ -12,13 +21,17 @@ export type MembershipRequest = {
   createdAt: string
 }
 
-type Step = 'details' | 'confirm-delete' | 'approved'
+type Step = 'details' | 'confirm-delete' | 'credentials' | 'approved'
 
 type MembershipRequestDialogProps = {
   request: MembershipRequest
   onClose: () => void
   onApproved: (id: string) => void
   onDeleted: (id: string) => void
+}
+
+function generatePassword() {
+  return crypto.randomUUID().replace(/-/g, '').slice(0, 12)
 }
 
 function MembershipRequestDialog({
@@ -30,21 +43,29 @@ function MembershipRequestDialog({
   const [step, setStep] = useState<Step>('details')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [temporaryPassword, setTemporaryPassword] = useState('')
-  const [copied, setCopied] = useState(false)
+  const [emailSent, setEmailSent] = useState(true)
+
+  const [corporateEmail, setCorporateEmail] = useState('')
+  const [password, setPassword] = useState(generatePassword())
 
   function getErrorMessage(err: unknown, fallback: string) {
     return isAxiosError<{ error?: string }>(err) ? err.response?.data.error ?? fallback : fallback
   }
 
   async function handleApprove() {
+    if (!corporateEmail.trim() || !password.trim()) {
+      setError('Introduce la cuenta corporativa y la contraseña temporal.')
+      return
+    }
+
     setLoading(true)
     setError('')
     try {
-      const res = await api.post<{ temporaryPassword: string }>(
+      const res = await api.post<{ emailSent: boolean }>(
         `/membership-requests/${request.id}/approve`,
+        { email: corporateEmail.trim(), password: password.trim() },
       )
-      setTemporaryPassword(res.data.temporaryPassword)
+      setEmailSent(res.data.emailSent)
       setStep('approved')
       onApproved(request.id)
     } catch (err) {
@@ -65,14 +86,6 @@ function MembershipRequestDialog({
       setError(getErrorMessage(err, 'No se ha podido eliminar la solicitud.'))
       setLoading(false)
     }
-  }
-
-  async function copyPassword() {
-    try {
-      await navigator.clipboard.writeText(temporaryPassword)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {}
   }
 
   return (
@@ -130,15 +143,11 @@ function MembershipRequestDialog({
               </button>
               <button
                 type="button"
-                onClick={handleApprove}
+                onClick={() => setStep('credentials')}
                 disabled={loading}
                 className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gold-400 px-4 py-2 text-sm font-semibold text-neutral-900 disabled:opacity-60"
               >
-                {loading ? (
-                  <Loader2 size={14} className="animate-spin" />
-                ) : (
-                  <Check size={14} />
-                )}
+                <Check size={14} />
                 Aprobar solicitud
               </button>
             </div>
@@ -178,23 +187,96 @@ function MembershipRequestDialog({
           </div>
         )}
 
-        {step === 'approved' && (
+        {step === 'credentials' && (
           <div className="mt-5">
             <p className="text-sm text-white/70">
-              Cuenta creada. Comparte esta contraseña temporal con {request.name} de forma
-              segura — no volverá a mostrarse.
+              Crea la cuenta corporativa de {request.name} en Workspace y pega aquí sus
+              accesos. Se enviarán por correo a <strong>{request.email}</strong>.
             </p>
-            <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
-              <code className="text-sm text-gold-400">{temporaryPassword}</code>
+
+            <div className="mt-4 space-y-3">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-white/80">
+                  Cuenta corporativa
+                </label>
+                <input
+                  type="email"
+                  value={corporateEmail}
+                  onChange={(event) => setCorporateEmail(event.target.value)}
+                  placeholder="nombre.apellido@esoliupo.org"
+                  className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-gold-400 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-white/80">
+                  Contraseña temporal
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className="flex-1 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 font-mono text-sm text-white focus:border-gold-400 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setPassword(generatePassword())}
+                    className="rounded-lg border border-white/10 px-3 text-white/60 hover:bg-white/5 hover:text-white"
+                    aria-label="Generar otra contraseña"
+                    title="Generar otra contraseña"
+                  >
+                    <Dices size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {error && (
+              <p className="mt-3 flex items-center gap-2 text-sm text-red-400">
+                <CircleAlert size={14} />
+                {error}
+              </p>
+            )}
+
+            <div className="mt-5 flex gap-2">
               <button
                 type="button"
-                onClick={copyPassword}
-                className="text-white/50 hover:text-white"
-                aria-label="Copiar contraseña"
+                onClick={() => setStep('details')}
+                disabled={loading}
+                className="flex-1 rounded-full border border-white/10 px-4 py-2 text-sm text-white/70 hover:bg-white/5"
               >
-                {copied ? <Check size={16} /> : <Copy size={16} />}
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleApprove}
+                disabled={loading}
+                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gold-400 px-4 py-2 text-sm font-semibold text-neutral-900 disabled:opacity-60"
+              >
+                {loading ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Mail size={14} />
+                )}
+                Aprobar y enviar por correo
               </button>
             </div>
+          </div>
+        )}
+
+        {step === 'approved' && (
+          <div className="mt-5">
+            {emailSent ? (
+              <p className="flex items-center gap-2 text-sm text-white/70">
+                <Check size={14} className="text-green-400" />
+                Cuenta creada y correo enviado a {request.email}.
+              </p>
+            ) : (
+              <p className="flex items-center gap-2 text-sm text-red-300">
+                <CircleAlert size={14} />
+                Cuenta creada, pero no se ha podido enviar el correo. Comparte los accesos
+                manualmente con {request.name}.
+              </p>
+            )}
             <button
               type="button"
               onClick={onClose}

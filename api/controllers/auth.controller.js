@@ -24,6 +24,7 @@ function toPublicUser(user) {
     role: user.role,
     photoUrl: user.photoUrl,
     studies: user.studies,
+    notifyEvents: user.notifyEvents,
   }
 }
 

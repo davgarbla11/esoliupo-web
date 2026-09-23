@@ -1,11 +1,13 @@
 import bcrypt from 'bcryptjs'
-import crypto from 'crypto'
+import {
+  renderMembershipApprovedEmail,
+  renderMembershipRequestReceivedEmail,
+} from '../lib/emailTemplates.js'
+import { sendMail } from '../lib/mailer.js'
 import prisma from '../lib/prisma.js'
 import { ROLES } from '../lib/rbac.js'
 
-function generateTemporaryPassword() {
-  return crypto.randomBytes(9).toString('base64').replace(/[+/=]/g, '').slice(0, 12)
-}
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export async function createMembershipRequest(req, res) {
   const { name, email, motivation, isUpoStudent } = req.body
@@ -22,6 +24,16 @@ export async function createMembershipRequest(req, res) {
     data: { name: name.trim(), email: email.trim(), motivation: motivation.trim(), isUpoStudent },
   })
 
+  try {
+    await sendMail({
+      to: request.email,
+      subject: 'ESOLIUPO — hemos recibido tu solicitud',
+      html: renderMembershipRequestReceivedEmail({ name: request.name }),
+    })
+  } catch (err) {
+    console.error('[mail] no se ha podido confirmar la solicitud a', request.email, err)
+  }
+
   res.status(201).json({ request })
 }
 
@@ -35,24 +47,32 @@ export async function listMembershipRequests(req, res) {
 
 export async function approveMembershipRequest(req, res) {
   const { id } = req.params
+  const { email, password } = req.body
+
+  if (!email?.trim() || !EMAIL_PATTERN.test(email.trim())) {
+    return res.status(400).json({ error: 'Introduce la cuenta corporativa (correo válido).' })
+  }
+  if (!password || password.length < 8) {
+    return res.status(400).json({ error: 'La contraseña temporal debe tener al menos 8 caracteres.' })
+  }
 
   const request = await prisma.membershipRequest.findUnique({ where: { id } })
   if (!request) {
     return res.status(404).json({ error: 'Solicitud no encontrada.' })
   }
 
-  const existingUser = await prisma.user.findUnique({ where: { email: request.email } })
+  const corporateEmail = email.trim()
+  const existingUser = await prisma.user.findUnique({ where: { email: corporateEmail } })
   if (existingUser) {
     return res.status(409).json({ error: 'Ya existe una cuenta con ese correo.' })
   }
 
-  const temporaryPassword = generateTemporaryPassword()
-  const passwordHash = await bcrypt.hash(temporaryPassword, 10)
+  const passwordHash = await bcrypt.hash(password, 10)
 
   const user = await prisma.user.create({
     data: {
       name: request.name,
-      email: request.email,
+      email: corporateEmail,
       passwordHash,
       role: ROLES.SOCIO,
     },
@@ -63,9 +83,21 @@ export async function approveMembershipRequest(req, res) {
     data: { status: 'APPROVED' },
   })
 
+  let emailSent = true
+  try {
+    await sendMail({
+      to: request.email,
+      subject: 'ESOLIUPO — ya eres socio',
+      html: renderMembershipApprovedEmail({ name: request.name, email: corporateEmail, password }),
+    })
+  } catch (err) {
+    emailSent = false
+    console.error('[mail] no se ha podido enviar el alta a', request.email, err)
+  }
+
   res.json({
     user: { id: user.id, name: user.name, email: user.email, role: user.role },
-    temporaryPassword,
+    emailSent,
   })
 }
 

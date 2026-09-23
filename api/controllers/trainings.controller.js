@@ -1,3 +1,5 @@
+import { renderTrainingPublishedEmail } from '../lib/emailTemplates.js'
+import { sendMail } from '../lib/mailer.js'
 import prisma from '../lib/prisma.js'
 
 function toPublicTraining(training) {
@@ -8,6 +10,7 @@ function toPublicTraining(training) {
     place: training.place,
     date: training.date,
     published: training.published,
+    notifiedAt: training.notifiedAt,
     instructor: {
       id: training.instructor.id,
       name: training.instructor.name,
@@ -159,6 +162,44 @@ export async function updateTraining(req, res) {
     include: { instructor: true, _count: { select: { enrollments: true } } },
   })
   res.json({ training: toPublicTraining(training) })
+}
+
+export async function notifyTrainingPublished(req, res) {
+  const { id } = req.params
+
+  const training = await prisma.training.findUnique({ where: { id } })
+  if (!training) {
+    return res.status(404).json({ error: 'Formación no encontrada.' })
+  }
+  if (!training.published) {
+    return res.status(400).json({ error: 'La formación no está publicada.' })
+  }
+
+  const recipients = await prisma.user.findMany({
+    where: { active: true, notifyEvents: true },
+    select: { email: true },
+  })
+
+  const html = renderTrainingPublishedEmail({
+    title: training.title,
+    date: training.date,
+    place: training.place,
+    description: training.description,
+  })
+
+  let sent = 0
+  for (const recipient of recipients) {
+    try {
+      await sendMail({ to: recipient.email, subject: `Nueva formación: ${training.title}`, html })
+      sent += 1
+    } catch (err) {
+      console.error('[mail] no se ha podido notificar a', recipient.email, err)
+    }
+  }
+
+  await prisma.training.update({ where: { id }, data: { notifiedAt: new Date() } })
+
+  res.json({ sent, total: recipients.length })
 }
 
 export async function deleteTraining(req, res) {

@@ -4,6 +4,7 @@ import express from 'express'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import { STORAGE_DIR } from './lib/storage.js'
+import { auditLog } from './middlewares/auditLog.middleware.js'
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware.js'
 import routes from './routes/index.js'
 
@@ -21,6 +22,7 @@ app.use(
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(cookieParser())
+app.use(auditLog)
 
 app.use(
   '/api/uploads',

@@ -16,12 +16,18 @@ function toPublicUser(user) {
     position: user.position?.name ?? null,
     studies: user.studies,
     photoUrl: user.photoUrl,
+    notifyEvents: user.notifyEvents,
     createdAt: user.createdAt,
   }
 }
 
 function generateTemporaryPassword() {
   return crypto.randomBytes(9).toString('base64').replace(/[+/=]/g, '').slice(0, 12)
+}
+
+export async function getNotifiableCount(req, res) {
+  const count = await prisma.user.count({ where: { active: true, notifyEvents: true } })
+  res.json({ count })
 }
 
 export async function listUserDirectory(req, res) {
@@ -123,11 +129,17 @@ export async function updateUserStatus(req, res) {
 
 export async function updateUserProfile(req, res) {
   const { id } = req.params
-  const { studies, photoUrl } = req.body
+  const { studies, photoUrl, notifyEvents } = req.body
 
   const data = {}
   if (studies !== undefined) data.studies = studies?.trim() || null
   if (photoUrl !== undefined) data.photoUrl = photoUrl?.trim() || null
+  if (notifyEvents !== undefined) {
+    if (typeof notifyEvents !== 'boolean') {
+      return res.status(400).json({ error: 'Preferencia inválida.' })
+    }
+    data.notifyEvents = notifyEvents
+  }
 
   const user = await prisma.user.findUnique({ where: { id } })
   if (!user) {

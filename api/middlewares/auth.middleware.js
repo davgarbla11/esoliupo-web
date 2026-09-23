@@ -22,7 +22,7 @@ export async function requireAuth(req, res, next) {
     return res.status(401).json({ error: 'Sesión inválida o caducada.' })
   }
 
-  req.user = { sub: user.id, role: user.role }
+  req.user = { sub: user.id, role: user.role, email: user.email }
   next()
 }
 

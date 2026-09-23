@@ -2,6 +2,7 @@ import { Router } from 'express'
 import multer from 'multer'
 import {
   createUser,
+  getNotifiableCount,
   listUserDirectory,
   listUsers,
   resetUserPassword,
@@ -13,6 +14,7 @@ import {
 import {
   requireAuth,
   requirePermission,
+  requireRole,
   requireSelfOrPermission,
 } from '../middlewares/auth.middleware.js'
 
@@ -56,6 +58,7 @@ router.patch(
 )
 
 router.get('/directory', requireAuth, requirePermission('MANAGE_TRAININGS'), listUserDirectory)
+router.get('/notifiable-count', requireAuth, requireRole('JUNTA_DIRECTIVA'), getNotifiableCount)
 
 router.use(requireAuth, requirePermission('MANAGE_USERS'))
 

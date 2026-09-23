@@ -5,6 +5,7 @@ import {
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
+  ShieldAlert,
   ShieldCheck,
   User,
   UserCheck,
@@ -22,6 +23,7 @@ const modules = [
   { to: '/dashboard/perfil', label: 'Mi perfil', icon: User, minRole: 'SOCIO' as Role },
   { to: '/dashboard/socios', label: 'Socios', icon: UserCheck, minRole: 'JUNTA_DIRECTIVA' as Role },
   { to: '/dashboard/usuarios', label: 'Usuarios y roles', icon: ShieldCheck, minRole: 'ADMINISTRADOR' as Role },
+  { to: '/dashboard/superadmin', label: 'Superadmin', icon: ShieldAlert, minRole: 'ADMINISTRADOR' as Role },
 ]
 
 const roleLabels: Record<Role, string> = {

@@ -1,3 +1,5 @@
+import { renderLeaveApprovedEmail } from '../lib/emailTemplates.js'
+import { sendMail } from '../lib/mailer.js'
 import prisma from '../lib/prisma.js'
 
 function toPublicLeaveRequest(request) {
@@ -46,8 +48,21 @@ export async function approveLeaveRequest(req, res) {
     return res.status(404).json({ error: 'Solicitud no encontrada.' })
   }
 
-  await prisma.user.update({ where: { id: request.userId }, data: { active: false } })
+  const user = await prisma.user.update({
+    where: { id: request.userId },
+    data: { active: false },
+  })
   await prisma.leaveRequest.update({ where: { id }, data: { status: 'APPROVED' } })
+
+  try {
+    await sendMail({
+      to: user.email,
+      subject: 'ESOLIUPO — tu baja se ha procesado',
+      html: renderLeaveApprovedEmail({ name: user.name }),
+    })
+  } catch (err) {
+    console.error('[mail] no se ha podido confirmar la baja a', user.email, err)
+  }
 
   res.json({})
 }

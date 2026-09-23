@@ -7,6 +7,7 @@ export type EsoliupoEvent = {
   content: string
   coverImageUrl: string | null
   published: boolean
+  notifiedAt: string | null
   createdAt: string
   updatedAt: string
 }

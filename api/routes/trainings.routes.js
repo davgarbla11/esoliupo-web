@@ -6,10 +6,12 @@ import {
   getTraining,
   listPublicTrainings,
   listTrainings,
+  notifyTrainingPublished,
   unenrollFromTraining,
   updateTraining,
 } from '../controllers/trainings.controller.js'
 import { requireAuth, requirePermission } from '../middlewares/auth.middleware.js'
+import { mailRateLimit, requireSameOrigin } from '../middlewares/mailGuard.middleware.js'
 
 const router = Router()
 
@@ -26,5 +28,6 @@ router.post('/', createTraining)
 router.get('/:id', getTraining)
 router.patch('/:id', updateTraining)
 router.delete('/:id', deleteTraining)
+router.post('/:id/notify', requireSameOrigin, mailRateLimit, notifyTrainingPublished)
 
 export default router

@@ -49,6 +49,9 @@ function MyProfile() {
   const [studiesError, setStudiesError] = useState('')
   const [studiesSaved, setStudiesSaved] = useState(false)
 
+  const [notifySaving, setNotifySaving] = useState(false)
+  const [notifyError, setNotifyError] = useState('')
+
   const [confirmingLeave, setConfirmingLeave] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [leaveError, setLeaveError] = useState('')
@@ -91,6 +94,19 @@ function MyProfile() {
       setStudiesError(getErrorMessage(err, 'No se ha podido guardar.'))
     } finally {
       setStudiesSaving(false)
+    }
+  }
+
+  async function handleToggleNotifyEvents() {
+    setNotifySaving(true)
+    setNotifyError('')
+    try {
+      await api.patch(`/users/${userId}/profile`, { notifyEvents: !user.notifyEvents })
+      await refreshUser()
+    } catch (err) {
+      setNotifyError(getErrorMessage(err, 'No se ha podido guardar la preferencia.'))
+    } finally {
+      setNotifySaving(false)
     }
   }
 
@@ -229,11 +245,34 @@ function MyProfile() {
       >
         <h2 className="text-sm font-medium text-white/80">Preferencias</h2>
 
-        <div className="mt-3 flex items-center gap-3 rounded-lg px-3 py-2.5 text-white/40">
-          <Bell size={16} />
-          <span className="flex-1 text-sm">Recibir noticias de eventos y formaciones</span>
-          <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs">Próximamente</span>
+        <div className="mt-3 flex items-center gap-3 rounded-lg px-3 py-2.5">
+          <Bell size={16} className="text-white/60" />
+          <span className="flex-1 text-sm text-white/80">
+            Recibir un correo cuando se publiquen eventos y formaciones
+          </span>
+          <button
+            type="button"
+            onClick={handleToggleNotifyEvents}
+            disabled={notifySaving}
+            role="switch"
+            aria-checked={user.notifyEvents}
+            className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-60 ${
+              user.notifyEvents ? 'bg-gold-400' : 'bg-white/10'
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                user.notifyEvents ? 'translate-x-[22px]' : 'translate-x-0.5'
+              }`}
+            />
+          </button>
         </div>
+        {notifyError && (
+          <p className="mt-1 flex items-center gap-2 px-3 text-sm text-red-400">
+            <CircleAlert size={14} />
+            {notifyError}
+          </p>
+        )}
 
         <div className="mt-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-white/40">
           <MessageCircle size={16} />

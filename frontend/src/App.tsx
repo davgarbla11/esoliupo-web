@@ -11,6 +11,7 @@ import EventsManagement from './pages/dashboard/EventsManagement'
 import FormacionesManagement from './pages/dashboard/FormacionesManagement'
 import MembershipRequests from './pages/dashboard/MembershipRequests'
 import MyProfile from './pages/dashboard/MyProfile'
+import SuperadminPanel from './pages/dashboard/SuperadminPanel'
 import UsersManagement from './pages/dashboard/UsersManagement'
 import Home from './pages/Home'
 import JoinRequest from './pages/JoinRequest'
@@ -65,6 +66,14 @@ function App() {
             element={
               <ProtectedRoute minRole="ADMINISTRADOR">
                 <UsersManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="superadmin"
+            element={
+              <ProtectedRoute minRole="ADMINISTRADOR">
+                <SuperadminPanel />
               </ProtectedRoute>
             }
           />

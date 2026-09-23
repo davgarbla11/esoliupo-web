@@ -10,6 +10,7 @@ export type User = {
   role: Role
   photoUrl: string | null
   studies: string | null
+  notifyEvents: boolean
 }
 
 type AuthContextValue = {

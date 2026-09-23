@@ -120,7 +120,7 @@ function LeaveRequestDialog({
           <div className="mt-5">
             <p className="text-sm text-white/70">
               {request.userName} dejará de ser socio de ESOLIUPO y perderá el acceso al
-              panel.
+              panel. Le llegará un correo confirmando que su baja se ha procesado.
             </p>
             {error && (
               <p className="mt-3 flex items-center gap-2 text-sm text-red-400">

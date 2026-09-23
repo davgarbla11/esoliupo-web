@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import PublishNotifyDialog from '../../components/dashboard/PublishNotifyDialog'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../lib/api'
 import { isAtLeast } from '../../lib/rbac'
@@ -36,6 +37,7 @@ function EventsManagement() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [publishTarget, setPublishTarget] = useState<EsoliupoEvent | null>(null)
 
   useEffect(() => {
     if (!canManage) return
@@ -59,10 +61,15 @@ function EventsManagement() {
   }
 
   async function handleTogglePublished(event: EsoliupoEvent) {
+    if (!event.published) {
+      setPublishTarget(event)
+      return
+    }
+
     setTogglingId(event.id)
     try {
       const res = await api.patch<{ event: EsoliupoEvent }>(`/events/${event.id}`, {
-        published: !event.published,
+        published: false,
       })
       setEvents((prev) => prev.map((e) => (e.id === event.id ? res.data.event : e)))
     } catch {
@@ -70,6 +77,21 @@ function EventsManagement() {
     } finally {
       setTogglingId(null)
     }
+  }
+
+  async function handlePublish(event: EsoliupoEvent) {
+    const res = await api.patch<{ event: EsoliupoEvent }>(`/events/${event.id}`, {
+      published: true,
+    })
+    setEvents((prev) => prev.map((e) => (e.id === event.id ? res.data.event : e)))
+  }
+
+  async function handlePublishAndNotify(event: EsoliupoEvent) {
+    await handlePublish(event)
+    await api.post(`/events/${event.id}/notify`)
+    setEvents((prev) =>
+      prev.map((e) => (e.id === event.id ? { ...e, notifiedAt: new Date().toISOString() } : e)),
+    )
   }
 
   async function handleDelete(id: string) {
@@ -264,6 +286,16 @@ function EventsManagement() {
             </tbody>
           </table>
         </motion.div>
+      )}
+
+      {publishTarget && (
+        <PublishNotifyDialog
+          title={publishTarget.title}
+          notifiedAt={publishTarget.notifiedAt}
+          onClose={() => setPublishTarget(null)}
+          onPublishOnly={() => handlePublish(publishTarget)}
+          onPublishAndNotify={() => handlePublishAndNotify(publishTarget)}
+        />
       )}
     </div>
   )

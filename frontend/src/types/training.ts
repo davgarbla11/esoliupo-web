@@ -13,6 +13,7 @@ export type EsoliupoTraining = {
   place: string
   date: string
   published: boolean
+  notifiedAt: string | null
   instructor: TrainingInstructor
   enrolledCount: number
   enrolled?: boolean
