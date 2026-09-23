@@ -1,1 +1,143 @@
 @import 'tailwindcss';
+
+@theme {
+  --color-gold-50: #fef8ea;
+  --color-gold-100: #feefcf;
+  --color-gold-200: #fadc9a;
+  --color-gold-300: #facc60;
+  --color-gold-400: #fcc101;
+  --color-gold-500: #e2a600;
+  --color-gold-600: #b98100;
+  --color-gold-700: #8e5f00;
+  --color-gold-800: #634000;
+  --color-gold-900: #412900;
+  --color-gold-950: #211300;
+
+  --font-sans: 'Google Sans Flex', ui-sans-serif, system-ui, sans-serif;
+  --font-heading: 'Jost', ui-sans-serif, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+@keyframes circuit-draw {
+  to {
+    stroke-dashoffset: -400;
+  }
+}
+
+@keyframes node-glow {
+  0%,
+  100% {
+    opacity: 0.35;
+    r: 5;
+  }
+  50% {
+    opacity: 1;
+    r: 7;
+  }
+}
+
+@keyframes blob-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(3%, -4%) scale(1.08);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-circuit-draw {
+  animation: circuit-draw 6s linear infinite;
+}
+
+.animate-node-glow {
+  animation: node-glow 3s ease-in-out infinite;
+}
+
+.animate-blob-drift {
+  animation: blob-drift 14s ease-in-out infinite;
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s ease-out both;
+}
+
+.event-content {
+  color: rgb(255 255 255 / 0.75);
+  line-height: 1.7;
+}
+
+.event-content > * + * {
+  margin-top: 1em;
+}
+
+.event-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
+}
+
+.event-content h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+}
+
+.event-content a {
+  color: var(--color-gold-400);
+  text-decoration: underline;
+  text-decoration-color: rgb(252 193 1 / 0.4);
+}
+
+.event-content ul,
+.event-content ol {
+  padding-left: 1.4em;
+}
+
+.event-content ul {
+  list-style: disc;
+}
+
+.event-content ol {
+  list-style: decimal;
+}
+
+.event-content blockquote {
+  border-left: 2px solid var(--color-gold-400);
+  padding-left: 1em;
+  color: rgb(255 255 255 / 0.6);
+  font-style: italic;
+}
+
+.event-content .event-content-image,
+.event-content img {
+  border-radius: 0.75rem;
+  max-width: 100%;
+}
