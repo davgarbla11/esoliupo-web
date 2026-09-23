@@ -29,6 +29,7 @@ model User {
   trainingsTaught     Training[]           @relation("TrainingInstructor")
   trainingEnrollments TrainingEnrollment[]
   auditLogs           AuditLog[]
+  contactReplies      ContactMessage[]     @relation("ContactMessageRepliedBy")
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 
@@ -138,4 +139,24 @@ model AuditLog {
 
   @@map("audit_logs")
   @@index([createdAt])
+}
+
+enum ContactMessageStatus {
+  PENDING
+  ANSWERED
+}
+
+model ContactMessage {
+  id           String               @id @default(uuid())
+  name         String
+  email        String
+  message      String
+  status       ContactMessageStatus @default(PENDING)
+  reply        String?
+  repliedById  String?
+  repliedBy    User?                @relation("ContactMessageRepliedBy", fields: [repliedById], references: [id], onDelete: SetNull)
+  repliedAt    DateTime?
+  createdAt    DateTime             @default(now())
+
+  @@map("contact_messages")
 }

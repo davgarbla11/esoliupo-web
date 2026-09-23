@@ -3,7 +3,7 @@ const INK = '#0a0a0a'
 const MUTED = '#6b6b6b'
 const BORDER = '#e8e8e8'
 const SITE_URL = process.env.SITE_URL ?? 'https://esoliupo.org'
-const LOGO_URL = `${SITE_URL}/brand/icon-mark.png`
+const LOGO_URL = 'cid:esoliupo-logo'
 
 const DATE_LABEL = new Intl.DateTimeFormat('es-ES', {
   weekday: 'long',

@@ -256,13 +256,13 @@ function MyProfile() {
             disabled={notifySaving}
             role="switch"
             aria-checked={user.notifyEvents}
-            className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-60 ${
-              user.notifyEvents ? 'bg-gold-400' : 'bg-white/10'
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-60 ${
+              user.notifyEvents ? 'bg-gold-400' : 'bg-white/15'
             }`}
           >
             <span
-              className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
-                user.notifyEvents ? 'translate-x-[22px]' : 'translate-x-0.5'
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                user.notifyEvents ? 'translate-x-6' : 'translate-x-1'
               }`}
             />
           </button>

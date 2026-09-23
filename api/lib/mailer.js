@@ -1,6 +1,11 @@
+import fs from 'fs'
+import path from 'path'
 import { OAuth2Client } from 'google-auth-library'
 
 const MAIL_FROM = process.env.MAIL_FROM ?? 'ESOLIUPO <no-reply@esoliupo.org>'
+const LOGO_CID = 'esoliupo-logo'
+const LOGO_PATH = path.resolve('assets/icon-mark.png')
+const BOUNDARY = 'esoliupo-mail-boundary'
 
 function loadGmailClient() {
   const { GMAIL_OAUTH_CLIENT_ID, GMAIL_OAUTH_CLIENT_SECRET, GMAIL_OAUTH_REFRESH_TOKEN } =
@@ -16,21 +21,46 @@ function loadGmailClient() {
 }
 
 const gmailClient = loadGmailClient()
+const logoBase64 = fs.existsSync(LOGO_PATH) ? wrapBase64(fs.readFileSync(LOGO_PATH).toString('base64')) : null
+
+function wrapBase64(base64) {
+  return base64.replace(/.{76}/g, '$&\r\n')
+}
 
 function encodeSubject(subject) {
   return `=?UTF-8?B?${Buffer.from(subject, 'utf-8').toString('base64')}?=`
 }
 
 function buildRawMessage({ to, subject, html, text }) {
+  const htmlPart = [
+    `Content-Type: text/html; charset="UTF-8"`,
+    'Content-Transfer-Encoding: base64',
+    '',
+    wrapBase64(Buffer.from(html ?? text ?? '', 'utf-8').toString('base64')),
+  ].join('\r\n')
+
+  const logoPart = logoBase64
+    ? [
+        'Content-Type: image/png',
+        'Content-Transfer-Encoding: base64',
+        `Content-ID: <${LOGO_CID}>`,
+        'Content-Disposition: inline; filename="logo.png"',
+        '',
+        logoBase64,
+      ].join('\r\n')
+    : null
+
   const lines = [
     `From: ${MAIL_FROM}`,
     `To: ${to}`,
     `Subject: ${encodeSubject(subject)}`,
     'MIME-Version: 1.0',
-    `Content-Type: text/html; charset="UTF-8"`,
-    'Content-Transfer-Encoding: base64',
+    `Content-Type: multipart/related; boundary="${BOUNDARY}"`,
     '',
-    Buffer.from(html ?? text ?? '', 'utf-8').toString('base64'),
+    `--${BOUNDARY}`,
+    htmlPart,
+    ...(logoPart ? [`--${BOUNDARY}`, logoPart] : []),
+    `--${BOUNDARY}--`,
   ]
 
   return Buffer.from(lines.join('\r\n'), 'utf-8')
