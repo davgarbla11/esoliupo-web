@@ -88,3 +88,56 @@ button:disabled {
 .animate-fade-up {
   animation: fade-up 0.7s ease-out both;
 }
+
+.event-content {
+  color: rgb(255 255 255 / 0.75);
+  line-height: 1.7;
+}
+
+.event-content > * + * {
+  margin-top: 1em;
+}
+
+.event-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
+}
+
+.event-content h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+}
+
+.event-content a {
+  color: var(--color-gold-400);
+  text-decoration: underline;
+  text-decoration-color: rgb(252 193 1 / 0.4);
+}
+
+.event-content ul,
+.event-content ol {
+  padding-left: 1.4em;
+}
+
+.event-content ul {
+  list-style: disc;
+}
+
+.event-content ol {
+  list-style: decimal;
+}
+
+.event-content blockquote {
+  border-left: 2px solid var(--color-gold-400);
+  padding-left: 1em;
+  color: rgb(255 255 255 / 0.6);
+  font-style: italic;
+}
+
+.event-content .event-content-image,
+.event-content img {
+  border-radius: 0.75rem;
+  max-width: 100%;
+}

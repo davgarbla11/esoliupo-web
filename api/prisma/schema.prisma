@@ -74,3 +74,18 @@ model LeaveRequest {
 
   @@map("leave_requests")
 }
+
+model Event {
+  id            String   @id @default(uuid())
+  title         String
+  description   String
+  place         String
+  date          DateTime
+  content       String   @default("")
+  coverImageUrl String?
+  published     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("events")
+}

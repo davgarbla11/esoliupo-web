@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import type { EventItem } from '../../lib/mockEvents'
+import type { EsoliupoEvent } from '../../types/event'
 
 const WEEKDAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 const MONTH_LABEL = new Intl.DateTimeFormat('es-ES', {
@@ -32,7 +32,7 @@ function buildMonthGrid(year: number, month: number) {
 }
 
 type EventsCalendarProps = {
-  events: EventItem[]
+  events: EsoliupoEvent[]
 }
 
 function EventsCalendar({ events }: EventsCalendarProps) {
@@ -41,7 +41,7 @@ function EventsCalendar({ events }: EventsCalendarProps) {
   const [selectedDay, setSelectedDay] = useState<Date | null>(null)
 
   const eventsByDay = useMemo(() => {
-    const map = new Map<string, EventItem[]>()
+    const map = new Map<string, EsoliupoEvent[]>()
     for (const event of events) {
       const key = dayKey(new Date(event.date))
       map.set(key, [...(map.get(key) ?? []), event])
@@ -132,7 +132,7 @@ function EventsCalendar({ events }: EventsCalendarProps) {
           {selectedEvents.map((event) => (
             <div key={event.id} className="text-sm">
               <p className="font-medium text-white">{event.title}</p>
-              <p className="text-white/50">{event.location}</p>
+              <p className="text-white/50">{event.place}</p>
             </div>
           ))}
         </div>

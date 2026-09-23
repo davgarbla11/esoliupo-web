@@ -1,22 +1,50 @@
 import { motion } from 'framer-motion'
-import { CalendarCheck, Clock3, Timer } from 'lucide-react'
+import { CalendarDays, Loader2, PartyPopper, Timer } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import EventListItem from '../../components/dashboard/EventListItem'
 import EventsCalendar from '../../components/dashboard/EventsCalendar'
 import StatTile from '../../components/dashboard/StatTile'
 import { useAuth } from '../../context/AuthContext'
-import { getAttendedEvents, getUpcomingEvents, mockEvents } from '../../lib/mockEvents'
+import api from '../../lib/api'
+import type { EsoliupoEvent } from '../../types/event'
 
 function daysUntil(date: string) {
   const diff = new Date(date).getTime() - Date.now()
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
 }
 
+function isThisMonth(date: string) {
+  const d = new Date(date)
+  const now = new Date()
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+}
+
 function DashboardHome() {
   const { user } = useAuth()
-  const upcoming = getUpcomingEvents()
-  const attended = getAttendedEvents()
+  const [events, setEvents] = useState<EsoliupoEvent[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const res = await api.get<{ events: EsoliupoEvent[] }>('/events/public')
+        setEvents(res.data.events)
+      } catch {
+        setEvents([])
+      } finally {
+        setLoading(false)
+      }
+    })()
+  }, [])
+
+  const upcoming = useMemo(() => {
+    const now = Date.now()
+    return events
+      .filter((event) => new Date(event.date).getTime() >= now)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  }, [events])
   const nextEvent = upcoming[0]
-  const formationHours = attended.filter((e) => e.type === 'Formación').length * 2
+  const eventsThisMonth = events.filter((event) => isThisMonth(event.date)).length
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12">
@@ -35,42 +63,54 @@ function DashboardHome() {
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
         <StatTile
-          icon={CalendarCheck}
-          label="Eventos asistidos"
-          value={String(attended.length)}
-          index={0}
-        />
-        <StatTile
-          icon={Clock3}
-          label="Horas de formación"
-          value={`${formationHours}h`}
-          index={1}
-        />
-        <StatTile
           icon={Timer}
           label="Próximo evento"
           value={nextEvent ? `en ${daysUntil(nextEvent.date)} días` : '—'}
+          index={0}
+        />
+        <StatTile
+          icon={CalendarDays}
+          label="Eventos este mes"
+          value={String(eventsThisMonth)}
+          index={1}
+        />
+        <StatTile
+          icon={PartyPopper}
+          label="Eventos publicados"
+          value={String(events.length)}
           index={2}
         />
       </div>
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div>
-          <h2 className="text-lg font-medium text-white">Próximos eventos</h2>
-          <div className="mt-4 space-y-3">
-            {upcoming.slice(0, 4).map((event, index) => (
-              <EventListItem key={event.id} event={event} index={index} />
-            ))}
-          </div>
+      {loading ? (
+        <div className="mt-16 flex justify-center">
+          <Loader2 className="animate-spin text-gold-400" size={28} />
         </div>
+      ) : (
+        <div className="mt-10 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+          <div>
+            <h2 className="text-lg font-medium text-white">Próximos eventos</h2>
+            <div className="mt-4 space-y-3">
+              {upcoming.slice(0, 4).map((event, index) => (
+                <EventListItem key={event.id} event={event} index={index} />
+              ))}
 
-        <div>
-          <h2 className="text-lg font-medium text-white">Calendario</h2>
-          <div className="mt-4">
-            <EventsCalendar events={mockEvents} />
+              {upcoming.length === 0 && (
+                <p className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/40">
+                  No hay próximos eventos publicados todavía.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-lg font-medium text-white">Calendario</h2>
+            <div className="mt-4">
+              <EventsCalendar events={events} />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

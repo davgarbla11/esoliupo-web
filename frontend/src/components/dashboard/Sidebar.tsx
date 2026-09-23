@@ -8,7 +8,6 @@ import {
   ShieldCheck,
   User,
   UserCheck,
-  Users2,
   X,
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
@@ -21,7 +20,6 @@ const modules = [
   { to: '/dashboard/eventos', label: 'Eventos', icon: Calendar, minRole: 'SOCIO' as Role },
   { to: '/dashboard/formaciones', label: 'Formaciones', icon: GraduationCap, minRole: 'SOCIO' as Role },
   { to: '/dashboard/perfil', label: 'Mi perfil', icon: User, minRole: 'SOCIO' as Role },
-  { to: '/dashboard/comisiones', label: 'Comisiones', icon: Users2, minRole: 'JUNTA_DIRECTIVA' as Role },
   { to: '/dashboard/socios', label: 'Socios', icon: UserCheck, minRole: 'JUNTA_DIRECTIVA' as Role },
   { to: '/dashboard/usuarios', label: 'Usuarios y roles', icon: ShieldCheck, minRole: 'ADMINISTRADOR' as Role },
 ]

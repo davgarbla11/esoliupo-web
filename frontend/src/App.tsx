@@ -7,6 +7,8 @@ import PublicLayout from './layouts/PublicLayout'
 import Activities from './pages/Activities'
 import Contact from './pages/Contact'
 import DashboardHome from './pages/dashboard/DashboardHome'
+import EventEditor from './pages/dashboard/EventEditor'
+import EventsManagement from './pages/dashboard/EventsManagement'
 import MembershipRequests from './pages/dashboard/MembershipRequests'
 import MyProfile from './pages/dashboard/MyProfile'
 import UsersManagement from './pages/dashboard/UsersManagement'
@@ -31,13 +33,21 @@ function App() {
           }
         >
           <Route index element={<DashboardHome />} />
+          <Route path="eventos" element={<EventsManagement />} />
           <Route
-            path="eventos"
+            path="eventos/nuevo"
             element={
-              <ModulePlaceholder
-                title="Eventos"
-                description="Próximamente: inscríbete y consulta el histórico de eventos de la asociación."
-              />
+              <ProtectedRoute minRole="JUNTA_DIRECTIVA">
+                <EventEditor />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="eventos/:id"
+            element={
+              <ProtectedRoute minRole="JUNTA_DIRECTIVA">
+                <EventEditor />
+              </ProtectedRoute>
             }
           />
           <Route
@@ -50,17 +60,6 @@ function App() {
             }
           />
           <Route path="perfil" element={<MyProfile />} />
-          <Route
-            path="comisiones"
-            element={
-              <ProtectedRoute minRole="JUNTA_DIRECTIVA">
-                <ModulePlaceholder
-                  title="Comisiones"
-                  description="Próximamente: crea y gestiona comisiones de trabajo y grupos."
-                />
-              </ProtectedRoute>
-            }
-          />
           <Route
             path="socios"
             element={
