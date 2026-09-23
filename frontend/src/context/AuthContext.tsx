@@ -11,6 +11,7 @@ export type User = {
   photoUrl: string | null
   studies: string | null
   notifyEvents: boolean
+  mustChangePassword: boolean
 }
 
 type AuthContextValue = {

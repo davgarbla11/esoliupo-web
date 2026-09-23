@@ -25,6 +25,7 @@ function toPublicUser(user) {
     photoUrl: user.photoUrl,
     studies: user.studies,
     notifyEvents: user.notifyEvents,
+    mustChangePassword: user.mustChangePassword,
   }
 }
 
@@ -105,6 +106,35 @@ export async function googleLogin(req, res) {
 export async function logout(req, res) {
   res.clearCookie(COOKIE_NAME, cookieOptions())
   res.status(204).end()
+}
+
+export async function changePassword(req, res) {
+  const { currentPassword, newPassword } = req.body
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Introduce tu contraseña actual y la nueva.' })
+  }
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 8 caracteres.' })
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: req.user.sub } })
+  if (!user) {
+    return res.status(404).json({ error: 'Usuario no encontrado.' })
+  }
+
+  const currentMatches = await bcrypt.compare(currentPassword, user.passwordHash)
+  if (!currentMatches) {
+    return res.status(401).json({ error: 'La contraseña actual no es correcta.' })
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 10)
+  const updated = await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash, mustChangePassword: false },
+  })
+
+  res.json({ user: toPublicUser(updated) })
 }
 
 export async function me(req, res) {

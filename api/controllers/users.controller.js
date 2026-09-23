@@ -70,7 +70,13 @@ export async function createUser(req, res) {
   const passwordHash = await bcrypt.hash(temporaryPassword, 10)
 
   const user = await prisma.user.create({
-    data: { name: name.trim(), email: email.trim(), passwordHash, role: finalRole },
+    data: {
+      name: name.trim(),
+      email: email.trim(),
+      passwordHash,
+      role: finalRole,
+      mustChangePassword: true,
+    },
     include: { position: true },
   })
 
@@ -194,7 +200,7 @@ export async function resetUserPassword(req, res) {
 
   const temporaryPassword = generateTemporaryPassword()
   const passwordHash = await bcrypt.hash(temporaryPassword, 10)
-  await prisma.user.update({ where: { id }, data: { passwordHash } })
+  await prisma.user.update({ where: { id }, data: { passwordHash, mustChangePassword: true } })
 
   let emailSent = true
   try {

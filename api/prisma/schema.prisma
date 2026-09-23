@@ -21,6 +21,7 @@ model User {
   name                String
   role                Role                 @default(SOCIO)
   active              Boolean              @default(true)
+  mustChangePassword  Boolean              @default(false)
   notifyEvents        Boolean              @default(true)
   studies             String?
   photoUrl            String?
@@ -30,6 +31,7 @@ model User {
   trainingEnrollments TrainingEnrollment[]
   auditLogs           AuditLog[]
   contactReplies      ContactMessage[]     @relation("ContactMessageRepliedBy")
+  passwordResetTokens PasswordResetToken[]
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 

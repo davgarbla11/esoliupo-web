@@ -79,6 +79,7 @@ export async function approveMembershipRequest(req, res) {
       email: corporateEmail,
       passwordHash,
       role: ROLES.SOCIO,
+      mustChangePassword: true,
     },
   })
 

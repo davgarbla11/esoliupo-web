@@ -2,6 +2,12 @@ import prisma from '../lib/prisma.js'
 import { hasPermission, isAtLeast } from '../lib/rbac.js'
 import { verifyAuthToken } from '../lib/jwt.js'
 
+const ALLOWED_DURING_FORCED_PASSWORD_CHANGE = new Set([
+  '/api/auth/me',
+  '/api/auth/logout',
+  '/api/auth/change-password',
+])
+
 export async function requireAuth(req, res, next) {
   const token = req.cookies?.token
 
@@ -20,6 +26,16 @@ export async function requireAuth(req, res, next) {
 
   if (!user || !user.active) {
     return res.status(401).json({ error: 'Sesión inválida o caducada.' })
+  }
+
+  if (
+    user.mustChangePassword &&
+    !ALLOWED_DURING_FORCED_PASSWORD_CHANGE.has(req.originalUrl.split('?')[0])
+  ) {
+    return res.status(403).json({
+      error: 'Debes cambiar tu contraseña antes de continuar.',
+      code: 'PASSWORD_CHANGE_REQUIRED',
+    })
   }
 
   req.user = { sub: user.id, role: user.role, email: user.email }
