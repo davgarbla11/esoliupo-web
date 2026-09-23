@@ -5,6 +5,7 @@ import leaveRequestsRoutes from './leaveRequests.routes.js'
 import membershipRequestsRoutes from './membershipRequests.routes.js'
 import membersRoutes from './members.routes.js'
 import positionsRoutes from './positions.routes.js'
+import trainingsRoutes from './trainings.routes.js'
 import usersRoutes from './users.routes.js'
 
 const router = Router()
@@ -17,5 +18,6 @@ router.use('/positions', positionsRoutes)
 router.use('/membership-requests', membershipRequestsRoutes)
 router.use('/leave-requests', leaveRequestsRoutes)
 router.use('/events', eventsRoutes)
+router.use('/trainings', trainingsRoutes)
 
 export default router

@@ -24,6 +24,15 @@ function generateTemporaryPassword() {
   return crypto.randomBytes(9).toString('base64').replace(/[+/=]/g, '').slice(0, 12)
 }
 
+export async function listUserDirectory(req, res) {
+  const users = await prisma.user.findMany({
+    where: { active: true },
+    select: { id: true, name: true, email: true, role: true },
+    orderBy: { name: 'asc' },
+  })
+  res.json({ users })
+}
+
 export async function listUsers(req, res) {
   const users = await prisma.user.findMany({
     include: { position: true },

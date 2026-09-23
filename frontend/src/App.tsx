@@ -1,6 +1,5 @@
 import { Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
-import ModulePlaceholder from './components/dashboard/ModulePlaceholder'
 import { AuthProvider } from './context/AuthContext'
 import DashboardLayout from './layouts/DashboardLayout'
 import PublicLayout from './layouts/PublicLayout'
@@ -9,6 +8,7 @@ import Contact from './pages/Contact'
 import DashboardHome from './pages/dashboard/DashboardHome'
 import EventEditor from './pages/dashboard/EventEditor'
 import EventsManagement from './pages/dashboard/EventsManagement'
+import FormacionesManagement from './pages/dashboard/FormacionesManagement'
 import MembershipRequests from './pages/dashboard/MembershipRequests'
 import MyProfile from './pages/dashboard/MyProfile'
 import UsersManagement from './pages/dashboard/UsersManagement'
@@ -50,15 +50,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="formaciones"
-            element={
-              <ModulePlaceholder
-                title="Formaciones"
-                description="Próximamente: talleres y formaciones organizadas por ESOLIUPO."
-              />
-            }
-          />
+          <Route path="formaciones" element={<FormacionesManagement />} />
           <Route path="perfil" element={<MyProfile />} />
           <Route
             path="socios"

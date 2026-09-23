@@ -2,6 +2,7 @@ import { Router } from 'express'
 import multer from 'multer'
 import {
   createUser,
+  listUserDirectory,
   listUsers,
   resetUserPassword,
   updateUserProfile,
@@ -53,6 +54,8 @@ router.patch(
   requireSelfOrPermission('MANAGE_USERS'),
   updateUserStatus,
 )
+
+router.get('/directory', requireAuth, requirePermission('MANAGE_TRAININGS'), listUserDirectory)
 
 router.use(requireAuth, requirePermission('MANAGE_USERS'))
 

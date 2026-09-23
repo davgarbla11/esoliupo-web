@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import type { EsoliupoEvent } from '../../types/event'
+import type { AgendaItem } from '../../types/agenda'
 
 const WEEKDAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 const MONTH_LABEL = new Intl.DateTimeFormat('es-ES', {
@@ -32,7 +32,7 @@ function buildMonthGrid(year: number, month: number) {
 }
 
 type EventsCalendarProps = {
-  events: EsoliupoEvent[]
+  events: AgendaItem[]
 }
 
 function EventsCalendar({ events }: EventsCalendarProps) {
@@ -41,7 +41,7 @@ function EventsCalendar({ events }: EventsCalendarProps) {
   const [selectedDay, setSelectedDay] = useState<Date | null>(null)
 
   const eventsByDay = useMemo(() => {
-    const map = new Map<string, EsoliupoEvent[]>()
+    const map = new Map<string, AgendaItem[]>()
     for (const event of events) {
       const key = dayKey(new Date(event.date))
       map.set(key, [...(map.get(key) ?? []), event])
@@ -131,7 +131,12 @@ function EventsCalendar({ events }: EventsCalendarProps) {
         <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
           {selectedEvents.map((event) => (
             <div key={event.id} className="text-sm">
-              <p className="font-medium text-white">{event.title}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-white">{event.title}</p>
+                <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white/60">
+                  {event.kind}
+                </span>
+              </div>
               <p className="text-white/50">{event.place}</p>
             </div>
           ))}

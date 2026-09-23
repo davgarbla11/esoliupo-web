@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Clock, MapPin } from 'lucide-react'
-import type { EsoliupoEvent } from '../../types/event'
+import type { AgendaItem } from '../../types/agenda'
 
 const MONTH_LABEL = new Intl.DateTimeFormat('es-ES', { month: 'short' })
 const TIME_LABEL = new Intl.DateTimeFormat('es-ES', {
@@ -8,7 +8,7 @@ const TIME_LABEL = new Intl.DateTimeFormat('es-ES', {
   minute: '2-digit',
 })
 
-function EventListItem({ event, index }: { event: EsoliupoEvent; index: number }) {
+function EventListItem({ event, index }: { event: AgendaItem; index: number }) {
   const date = new Date(event.date)
 
   return (
@@ -26,7 +26,12 @@ function EventListItem({ event, index }: { event: EsoliupoEvent; index: number }
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium text-white">{event.title}</p>
+        <div className="flex items-center gap-2">
+          <p className="truncate font-medium text-white">{event.title}</p>
+          <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white/60">
+            {event.kind}
+          </span>
+        </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/50">
           <span className="flex items-center gap-1">
             <Clock size={12} />

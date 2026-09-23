@@ -15,18 +15,20 @@ enum Role {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  passwordHash  String
-  name          String
-  role          Role           @default(SOCIO)
-  active        Boolean        @default(true)
-  studies       String?
-  photoUrl      String?
-  position      Position?
-  leaveRequests LeaveRequest[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id                  String               @id @default(uuid())
+  email               String               @unique
+  passwordHash        String
+  name                String
+  role                Role                 @default(SOCIO)
+  active              Boolean              @default(true)
+  studies             String?
+  photoUrl            String?
+  position            Position?
+  leaveRequests       LeaveRequest[]
+  trainingsTaught     Training[]           @relation("TrainingInstructor")
+  trainingEnrollments TrainingEnrollment[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 
   @@map("users")
 }
@@ -88,4 +90,32 @@ model Event {
   updatedAt     DateTime @updatedAt
 
   @@map("events")
+}
+
+model Training {
+  id           String               @id @default(uuid())
+  title        String
+  description  String
+  place        String
+  date         DateTime
+  instructorId String
+  instructor   User                 @relation("TrainingInstructor", fields: [instructorId], references: [id])
+  published    Boolean              @default(false)
+  enrollments  TrainingEnrollment[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@map("trainings")
+}
+
+model TrainingEnrollment {
+  id         String   @id @default(uuid())
+  trainingId String
+  training   Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([trainingId, userId])
+  @@map("training_enrollments")
 }
