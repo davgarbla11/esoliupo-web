@@ -141,4 +141,7 @@ dist
 # Uploaded user files (avatars, etc.)
 api/storage/
 
+# Google service account keys (Gmail API sending)
+api/secrets/
+
 graphify-out/
