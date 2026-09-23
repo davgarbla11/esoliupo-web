@@ -79,3 +79,15 @@ export async function replyToContactMessage(req, res) {
 
   res.json({ message: toPublicContactMessage(updated) })
 }
+
+export async function deleteContactMessage(req, res) {
+  const { id } = req.params
+
+  const contactMessage = await prisma.contactMessage.findUnique({ where: { id } })
+  if (!contactMessage) {
+    return res.status(404).json({ error: 'Mensaje no encontrado.' })
+  }
+
+  await prisma.contactMessage.delete({ where: { id } })
+  res.status(204).end()
+}

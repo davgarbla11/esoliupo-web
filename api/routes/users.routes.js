@@ -17,6 +17,7 @@ import {
   requireRole,
   requireSelfOrPermission,
 } from '../middlewares/auth.middleware.js'
+import { mailRateLimit, requireSameOrigin } from '../middlewares/mailGuard.middleware.js'
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
@@ -65,6 +66,6 @@ router.use(requireAuth, requirePermission('MANAGE_USERS'))
 router.get('/', listUsers)
 router.post('/', createUser)
 router.patch('/:id/role', requirePermission('MANAGE_ROLES'), updateUserRole)
-router.post('/:id/reset-password', resetUserPassword)
+router.post('/:id/reset-password', requireSameOrigin, mailRateLimit, resetUserPassword)
 
 export default router

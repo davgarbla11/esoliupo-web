@@ -2,6 +2,8 @@ import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 import fs from 'fs/promises'
 import sharp from 'sharp'
+import { renderPasswordResetEmail } from '../lib/emailTemplates.js'
+import { sendMail } from '../lib/mailer.js'
 import prisma from '../lib/prisma.js'
 import { ROLES } from '../lib/rbac.js'
 import { avatarPath, avatarUrl } from '../lib/storage.js'
@@ -194,5 +196,21 @@ export async function resetUserPassword(req, res) {
   const passwordHash = await bcrypt.hash(temporaryPassword, 10)
   await prisma.user.update({ where: { id }, data: { passwordHash } })
 
-  res.json({ temporaryPassword })
+  let emailSent = true
+  try {
+    await sendMail({
+      to: user.email,
+      subject: 'ESOLIUPO — se ha restablecido tu contraseña',
+      html: renderPasswordResetEmail({
+        name: user.name,
+        email: user.email,
+        password: temporaryPassword,
+      }),
+    })
+  } catch (err) {
+    emailSent = false
+    console.error('[mail] no se ha podido enviar el restablecimiento a', user.email, err)
+  }
+
+  res.json({ temporaryPassword, emailSent })
 }

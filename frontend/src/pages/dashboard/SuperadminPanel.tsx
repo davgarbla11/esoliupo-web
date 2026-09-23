@@ -1,7 +1,8 @@
 import { isAxiosError } from 'axios'
 import { motion } from 'framer-motion'
-import { CircleAlert, Loader2, RefreshCw, Send } from 'lucide-react'
+import { CircleAlert, Loader2, RefreshCw, Send, TriangleAlert } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useMaintenance } from '../../context/MaintenanceContext'
 import api from '../../lib/api'
 import type { AuditLogEntry } from '../../types/auditLog'
 
@@ -17,7 +18,70 @@ function getErrorMessage(err: unknown, fallback: string) {
   return isAxiosError<{ error?: string }>(err) ? err.response?.data.error ?? fallback : fallback
 }
 
-type Tab = 'correo' | 'logs'
+type Tab = 'correo' | 'logs' | 'mantenimiento'
+
+function MaintenanceTab() {
+  const { maintenanceMode, loading, refresh } = useMaintenance()
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handleToggle() {
+    setSaving(true)
+    setError('')
+    try {
+      await api.patch('/settings', { maintenanceMode: !maintenanceMode })
+      await refresh()
+    } catch (err) {
+      setError(getErrorMessage(err, 'No se ha podido cambiar el estado.'))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="mt-8 max-w-md">
+      <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-white">Modo mantenimiento</p>
+          <p className="mt-1 text-sm text-white/50">
+            La web pública mostrará un aviso de mantenimiento a cualquiera que no sea
+            Administrador. El panel sigue accesible para gestionar todo con normalidad.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={handleToggle}
+          disabled={loading || saving}
+          role="switch"
+          aria-checked={maintenanceMode}
+          className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-60 ${
+            maintenanceMode ? 'bg-red-500' : 'bg-white/15'
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              maintenanceMode ? 'translate-x-6' : 'translate-x-1'
+            }`}
+          />
+        </button>
+      </div>
+
+      {maintenanceMode && (
+        <p className="mt-3 flex items-center gap-2 text-sm text-red-300">
+          <TriangleAlert size={14} />
+          La web pública está en mantenimiento ahora mismo.
+        </p>
+      )}
+
+      {error && (
+        <p className="mt-3 flex items-center gap-2 text-sm text-red-400">
+          <CircleAlert size={14} />
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
 
 function TestEmailTab() {
   const [to, setTo] = useState('')
@@ -208,7 +272,7 @@ function SuperadminPanel() {
       </motion.div>
 
       <div className="mt-6 flex gap-1 border-b border-white/10">
-        {(['correo', 'logs'] as const).map((value) => (
+        {(['correo', 'logs', 'mantenimiento'] as const).map((value) => (
           <button
             key={value}
             type="button"
@@ -219,12 +283,14 @@ function SuperadminPanel() {
                 : 'text-white/50 hover:text-white'
             }`}
           >
-            {value === 'correo' ? 'Correo' : 'Logs'}
+            {value === 'correo' ? 'Correo' : value === 'logs' ? 'Logs' : 'Mantenimiento'}
           </button>
         ))}
       </div>
 
-      {tab === 'correo' ? <TestEmailTab /> : <LogsTab />}
+      {tab === 'correo' && <TestEmailTab />}
+      {tab === 'logs' && <LogsTab />}
+      {tab === 'mantenimiento' && <MaintenanceTab />}
     </div>
   )
 }

@@ -1,9 +1,16 @@
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
 
 export function requireSameOrigin(req, res, next) {
-  const origin = req.get('origin') ?? req.get('referer')
+  const header = req.get('origin') ?? req.get('referer')
 
-  if (origin && !origin.startsWith(process.env.CORS_ORIGIN)) {
+  let origin
+  try {
+    origin = header ? new URL(header).origin : null
+  } catch {
+    origin = null
+  }
+
+  if (!origin || origin !== process.env.CORS_ORIGIN) {
     return res.status(403).json({ error: 'Origen no permitido.' })
   }
 

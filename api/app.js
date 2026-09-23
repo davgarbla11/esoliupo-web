@@ -10,7 +10,7 @@ import routes from './routes/index.js'
 
 const app = express()
 
-app.set('trust proxy', 1)
+app.set('trust proxy', Number(process.env.TRUST_PROXY ?? 1))
 
 app.use(helmet())
 app.use(

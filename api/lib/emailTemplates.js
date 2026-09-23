@@ -117,15 +117,15 @@ export function renderEmailLayout({ eyebrow, heading, preheader, bodyHtml, ctaLa
 export function renderEventPublishedEmail({ title, date, place, description }) {
   return renderEmailLayout({
     eyebrow: 'Nuevo evento',
-    heading: title,
-    preheader: `${formatEventDate(date)} · ${place}`,
+    heading: escapeHtml(title),
+    preheader: `${formatEventDate(date)} · ${escapeHtml(place)}`,
     bodyHtml: `
       <p>La Junta Directiva ha publicado un nuevo evento:</p>
       <p style="margin:16px 0; padding:14px 16px; background-color:#faf7ee; border-radius:12px; font-size:14px; color:${INK};">
         📅 ${formatEventDate(date)}<br />
-        📍 ${place}
+        📍 ${escapeHtml(place)}
       </p>
-      <p>${description}</p>
+      <p>${escapeHtml(description)}</p>
     `,
     ctaLabel: 'Ver en Actividades',
     ctaUrl: `${SITE_URL}/actividades`,
@@ -135,15 +135,15 @@ export function renderEventPublishedEmail({ title, date, place, description }) {
 export function renderTrainingPublishedEmail({ title, date, place, description }) {
   return renderEmailLayout({
     eyebrow: 'Nueva formación',
-    heading: title,
-    preheader: `${formatEventDate(date)} · ${place}`,
+    heading: escapeHtml(title),
+    preheader: `${formatEventDate(date)} · ${escapeHtml(place)}`,
     bodyHtml: `
       <p>La Junta Directiva ha publicado una nueva formación y ya puedes inscribirte:</p>
       <p style="margin:16px 0; padding:14px 16px; background-color:#faf7ee; border-radius:12px; font-size:14px; color:${INK};">
         📅 ${formatEventDate(date)}<br />
-        📍 ${place}
+        📍 ${escapeHtml(place)}
       </p>
-      <p>${description}</p>
+      <p>${escapeHtml(description)}</p>
     `,
     ctaLabel: 'Inscribirme',
     ctaUrl: `${SITE_URL}/dashboard/formaciones`,
@@ -153,7 +153,7 @@ export function renderTrainingPublishedEmail({ title, date, place, description }
 export function renderMembershipRequestReceivedEmail({ name }) {
   return renderEmailLayout({
     eyebrow: 'Solicitud recibida',
-    heading: `Hola, ${name}`,
+    heading: `Hola, ${escapeHtml(name)}`,
     preheader: 'Tu solicitud para unirte a ESOLIUPO se ha registrado',
     bodyHtml: `
       <p>Hemos recibido tu solicitud para unirte a ESOLIUPO.</p>
@@ -165,15 +165,15 @@ export function renderMembershipRequestReceivedEmail({ name }) {
 export function renderMembershipApprovedEmail({ name, email, password }) {
   return renderEmailLayout({
     eyebrow: 'Ya eres socio',
-    heading: `Bienvenido/a a ESOLIUPO, ${name}`,
+    heading: `Bienvenido/a a ESOLIUPO, ${escapeHtml(name)}`,
     preheader: 'Tu cuenta de socio ya está lista',
     bodyHtml: `
       <p>Tu solicitud ha sido aprobada. Ya puedes acceder al panel de socios con estas credenciales:</p>
       <table role="presentation" cellpadding="0" cellspacing="0" style="margin:16px 0; width:100%; background-color:#faf7ee; border-radius:12px;">
         <tr>
           <td style="padding:14px 16px; font-size:14px; color:${INK};">
-            <strong>Correo:</strong> ${email}<br />
-            <strong>Contraseña temporal:</strong> ${password}
+            <strong>Correo:</strong> ${escapeHtml(email)}<br />
+            <strong>Contraseña temporal:</strong> ${escapeHtml(password)}
           </td>
         </tr>
       </table>
@@ -187,12 +187,37 @@ export function renderMembershipApprovedEmail({ name, email, password }) {
 export function renderLeaveApprovedEmail({ name }) {
   return renderEmailLayout({
     eyebrow: 'Baja procesada',
-    heading: `Hasta pronto, ${name}`,
+    heading: `Hasta pronto, ${escapeHtml(name)}`,
     preheader: 'Tu baja de ESOLIUPO se ha procesado correctamente',
     bodyHtml: `
       <p>Tu solicitud de baja como socio de ESOLIUPO ha sido aprobada y se ha procesado correctamente.</p>
       <p>Si en el futuro quieres volver a unirte, siempre serás bienvenido/a.</p>
     `,
+  })
+}
+
+export function renderPasswordResetEmail({ name, email, password }) {
+  return renderEmailLayout({
+    eyebrow: 'Contraseña restablecida',
+    heading: `Hola, ${escapeHtml(name)}`,
+    preheader: 'Se ha restablecido la contraseña de tu cuenta de ESOLIUPO',
+    bodyHtml: `
+      <p>Un Administrador ha restablecido la contraseña de tu cuenta. Estos son tus nuevos accesos:</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" style="margin:16px 0; width:100%; background-color:#faf7ee; border-radius:12px;">
+        <tr>
+          <td style="padding:14px 16px; font-size:14px; color:${INK};">
+            <strong>Correo:</strong> ${escapeHtml(email)}<br />
+            <strong>Contraseña temporal:</strong> ${escapeHtml(password)}
+          </td>
+        </tr>
+      </table>
+      <p>Por seguridad, cámbiala en cuanto inicies sesión.</p>
+      <p style="color:${MUTED}; font-size:13px;">
+        Si no esperabas este correo, contacta con la Junta Directiva.
+      </p>
+    `,
+    ctaLabel: 'Iniciar sesión',
+    ctaUrl: `${SITE_URL}/login`,
   })
 }
 

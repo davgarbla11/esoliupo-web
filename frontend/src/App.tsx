@@ -1,6 +1,8 @@
 import { Route, Routes } from 'react-router-dom'
+import MaintenanceGate from './components/MaintenanceGate'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
+import { MaintenanceProvider } from './context/MaintenanceContext'
 import DashboardLayout from './layouts/DashboardLayout'
 import PublicLayout from './layouts/PublicLayout'
 import Activities from './pages/Activities'
@@ -23,80 +25,88 @@ import WhoWeAre from './pages/WhoWeAre'
 function App() {
   return (
     <AuthProvider>
-      <Routes>
-        <Route path="login" element={<Login />} />
+      <MaintenanceProvider>
+        <Routes>
+          <Route path="login" element={<Login />} />
 
-        <Route
-          path="dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<DashboardHome />} />
-          <Route path="eventos" element={<EventsManagement />} />
           <Route
-            path="eventos/nuevo"
+            path="dashboard"
             element={
-              <ProtectedRoute minRole="JUNTA_DIRECTIVA">
-                <EventEditor />
+              <ProtectedRoute>
+                <DashboardLayout />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="eventos/:id"
-            element={
-              <ProtectedRoute minRole="JUNTA_DIRECTIVA">
-                <EventEditor />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="formaciones" element={<FormacionesManagement />} />
-          <Route path="perfil" element={<MyProfile />} />
-          <Route
-            path="socios"
-            element={
-              <ProtectedRoute minRole="JUNTA_DIRECTIVA">
-                <MembershipRequests />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="mensajes"
-            element={
-              <ProtectedRoute minRole="JUNTA_DIRECTIVA">
-                <ContactMessages />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="usuarios"
-            element={
-              <ProtectedRoute minRole="ADMINISTRADOR">
-                <UsersManagement />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="superadmin"
-            element={
-              <ProtectedRoute minRole="ADMINISTRADOR">
-                <SuperadminPanel />
-              </ProtectedRoute>
-            }
-          />
-        </Route>
+          >
+            <Route index element={<DashboardHome />} />
+            <Route path="eventos" element={<EventsManagement />} />
+            <Route
+              path="eventos/nuevo"
+              element={
+                <ProtectedRoute minRole="JUNTA_DIRECTIVA">
+                  <EventEditor />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="eventos/:id"
+              element={
+                <ProtectedRoute minRole="JUNTA_DIRECTIVA">
+                  <EventEditor />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="formaciones" element={<FormacionesManagement />} />
+            <Route path="perfil" element={<MyProfile />} />
+            <Route
+              path="socios"
+              element={
+                <ProtectedRoute minRole="JUNTA_DIRECTIVA">
+                  <MembershipRequests />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="mensajes"
+              element={
+                <ProtectedRoute minRole="JUNTA_DIRECTIVA">
+                  <ContactMessages />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="usuarios"
+              element={
+                <ProtectedRoute minRole="ADMINISTRADOR">
+                  <UsersManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="superadmin"
+              element={
+                <ProtectedRoute minRole="ADMINISTRADOR">
+                  <SuperadminPanel />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
 
-        <Route element={<PublicLayout />}>
-          <Route index element={<Home />} />
-          <Route path="quienes-somos" element={<WhoWeAre />} />
-          <Route path="actividades" element={<Activities />} />
-          <Route path="contacto" element={<Contact />} />
-          <Route path="unete" element={<JoinRequest />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
+          <Route
+            element={
+              <MaintenanceGate>
+                <PublicLayout />
+              </MaintenanceGate>
+            }
+          >
+            <Route index element={<Home />} />
+            <Route path="quienes-somos" element={<WhoWeAre />} />
+            <Route path="actividades" element={<Activities />} />
+            <Route path="contacto" element={<Contact />} />
+            <Route path="unete" element={<JoinRequest />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
+      </MaintenanceProvider>
     </AuthProvider>
   )
 }

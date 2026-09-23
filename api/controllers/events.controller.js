@@ -27,6 +27,34 @@ function toPublicEvent(event) {
   }
 }
 
+function extractContentImageFilenames(html) {
+  if (!html) return new Set()
+  const matches = html.matchAll(/\/api\/uploads\/events\/content\/([a-f0-9-]+\.webp)/g)
+  return new Set(Array.from(matches, (m) => m[1]))
+}
+
+async function deleteContentImages(filenames) {
+  for (const filename of filenames) {
+    try {
+      await fs.unlink(eventContentImagePath(filename))
+    } catch (err) {
+      if (err.code !== 'ENOENT') {
+        console.error('[storage] no se ha podido borrar la imagen', filename, err)
+      }
+    }
+  }
+}
+
+async function deleteCoverImage(id) {
+  try {
+    await fs.unlink(eventCoverPath(id))
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      console.error('[storage] no se ha podido borrar la portada del evento', id, err)
+    }
+  }
+}
+
 function validateEventFields(body) {
   const { title, description, place, date } = body
 
@@ -114,6 +142,14 @@ export async function updateEvent(req, res) {
   }
 
   const event = await prisma.event.update({ where: { id }, data })
+
+  if (content !== undefined) {
+    const oldImages = extractContentImageFilenames(existing.content)
+    const newImages = extractContentImageFilenames(content)
+    const removed = [...oldImages].filter((filename) => !newImages.has(filename))
+    await deleteContentImages(removed)
+  }
+
   res.json({ event: toPublicEvent(event) })
 }
 
@@ -164,6 +200,12 @@ export async function deleteEvent(req, res) {
   }
 
   await prisma.event.delete({ where: { id } })
+
+  if (existing.coverImageUrl) {
+    await deleteCoverImage(id)
+  }
+  await deleteContentImages(extractContentImageFilenames(existing.content))
+
   res.status(204).end()
 }
 

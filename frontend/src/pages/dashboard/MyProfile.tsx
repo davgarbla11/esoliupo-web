@@ -60,6 +60,7 @@ function MyProfile() {
   if (!user) return null
 
   const userId = user.id
+  const notifyEvents = user.notifyEvents
 
   async function handleAvatarSelected(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -101,7 +102,7 @@ function MyProfile() {
     setNotifySaving(true)
     setNotifyError('')
     try {
-      await api.patch(`/users/${userId}/profile`, { notifyEvents: !user.notifyEvents })
+      await api.patch(`/users/${userId}/profile`, { notifyEvents: !notifyEvents })
       await refreshUser()
     } catch (err) {
       setNotifyError(getErrorMessage(err, 'No se ha podido guardar la preferencia.'))

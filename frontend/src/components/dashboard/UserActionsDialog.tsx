@@ -51,6 +51,7 @@ function UserActionsDialog({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [temporaryPassword, setTemporaryPassword] = useState('')
+  const [emailSent, setEmailSent] = useState(true)
   const [copied, setCopied] = useState(false)
   const [photoUrl, setPhotoUrl] = useState(user.photoUrl ?? null)
   const [avatarUploading, setAvatarUploading] = useState(false)
@@ -65,10 +66,11 @@ function UserActionsDialog({
     setLoading(true)
     setError('')
     try {
-      const res = await api.post<{ temporaryPassword: string }>(
+      const res = await api.post<{ temporaryPassword: string; emailSent: boolean }>(
         `/users/${user.id}/reset-password`,
       )
       setTemporaryPassword(res.data.temporaryPassword)
+      setEmailSent(res.data.emailSent)
       setStep('password-result')
     } catch (err) {
       setError(getErrorMessage(err, 'No se ha podido restablecer la contraseña.'))
@@ -257,10 +259,18 @@ function UserActionsDialog({
 
         {step === 'password-result' && (
           <div className="mt-5">
-            <p className="text-sm text-white/70">
-              Contraseña temporal generada. Compártela con {user.name} de forma segura — no
-              volverá a mostrarse.
-            </p>
+            {emailSent ? (
+              <p className="flex items-center gap-2 text-sm text-white/70">
+                <Check size={14} className="text-green-400" />
+                Se ha enviado la nueva contraseña por correo a {user.email}.
+              </p>
+            ) : (
+              <p className="flex items-center gap-2 text-sm text-red-300">
+                <CircleAlert size={14} />
+                No se ha podido enviar el correo. Comparte esta contraseña con{' '}
+                {user.name} de forma segura — no volverá a mostrarse.
+              </p>
+            )}
             <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
               <code className="text-sm text-gold-400">{temporaryPassword}</code>
               <button

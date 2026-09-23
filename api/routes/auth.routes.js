@@ -1,14 +1,13 @@
 import { Router } from 'express'
-import { googleLogin, login, logout, me, register } from '../controllers/auth.controller.js'
+import { googleLogin, login, logout, me } from '../controllers/auth.controller.js'
 import { requireAuth } from '../middlewares/auth.middleware.js'
+import { authRateLimit } from '../middlewares/authRateLimit.middleware.js'
 
 const router = Router()
 
-router.post('/register', register)
-router.post('/login', login)
-router.post('/google', googleLogin)
+router.post('/login', authRateLimit, login)
+router.post('/google', authRateLimit, googleLogin)
 router.post('/logout', logout)
 router.get('/me', requireAuth, me)
-
 
 export default router

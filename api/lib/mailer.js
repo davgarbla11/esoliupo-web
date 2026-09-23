@@ -70,7 +70,15 @@ function buildRawMessage({ to, subject, html, text }) {
     .replace(/=+$/, '')
 }
 
+function assertNoHeaderInjection(to) {
+  if (/[\r\n]/.test(to)) {
+    throw new Error(`Refusing to send: "to" address contains CR/LF: ${JSON.stringify(to)}`)
+  }
+}
+
 export async function sendMail({ to, subject, html, text }) {
+  assertNoHeaderInjection(to)
+
   if (!gmailClient) {
     console.log(`[mailer] Gmail OAuth no configurado — correo no enviado. Para: ${to} · Asunto: ${subject}`)
     return { sent: false }

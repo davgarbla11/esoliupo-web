@@ -103,7 +103,7 @@ model Training {
   place        String
   date         DateTime
   instructorId String
-  instructor   User                 @relation("TrainingInstructor", fields: [instructorId], references: [id])
+  instructor   User                 @relation("TrainingInstructor", fields: [instructorId], references: [id], onDelete: Restrict)
   published    Boolean              @default(false)
   notifiedAt   DateTime?
   enrollments  TrainingEnrollment[]
@@ -159,4 +159,12 @@ model ContactMessage {
   createdAt    DateTime             @default(now())
 
   @@map("contact_messages")
+}
+
+model AppSettings {
+  id              String   @id @default("singleton")
+  maintenanceMode Boolean  @default(false)
+  updatedAt       DateTime @updatedAt
+
+  @@map("app_settings")
 }

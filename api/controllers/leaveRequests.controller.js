@@ -1,6 +1,7 @@
 import { renderLeaveApprovedEmail } from '../lib/emailTemplates.js'
 import { sendMail } from '../lib/mailer.js'
 import prisma from '../lib/prisma.js'
+import { ROLES } from '../lib/rbac.js'
 
 function toPublicLeaveRequest(request) {
   return {
@@ -43,9 +44,18 @@ export async function listLeaveRequests(req, res) {
 export async function approveLeaveRequest(req, res) {
   const { id } = req.params
 
-  const request = await prisma.leaveRequest.findUnique({ where: { id } })
+  const request = await prisma.leaveRequest.findUnique({
+    where: { id },
+    include: { user: true },
+  })
   if (!request) {
     return res.status(404).json({ error: 'Solicitud no encontrada.' })
+  }
+
+  if (request.userId === req.user.sub && request.user.role === ROLES.ADMINISTRADOR) {
+    return res
+      .status(400)
+      .json({ error: 'Un Administrador no puede darse de baja a sí mismo.' })
   }
 
   const user = await prisma.user.update({

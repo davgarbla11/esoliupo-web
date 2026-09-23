@@ -3,6 +3,11 @@ import bcrypt from 'bcryptjs'
 import prisma from '../lib/prisma.js'
 import { ROLES } from '../lib/rbac.js'
 
+if (process.env.NODE_ENV === 'production' && !process.env.SEED_ADMIN_PASSWORD) {
+  console.error('SEED_ADMIN_PASSWORD es obligatorio en producción — no se usará una contraseña por defecto.')
+  process.exit(1)
+}
+
 const email = process.env.SEED_ADMIN_EMAIL ?? 'admin@esoliupo.org'
 const password = process.env.SEED_ADMIN_PASSWORD ?? 'admin12345'
 const name = 'Administrador ESOLIUPO'

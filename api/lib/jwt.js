@@ -3,9 +3,9 @@ import jwt from 'jsonwebtoken'
 const { JWT_SECRET, JWT_EXPIRES_IN } = process.env
 
 export function signAuthToken(payload) {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN })
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN, algorithm: 'HS256' })
 }
 
 export function verifyAuthToken(token) {
-  return jwt.verify(token, JWT_SECRET)
+  return jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] })
 }

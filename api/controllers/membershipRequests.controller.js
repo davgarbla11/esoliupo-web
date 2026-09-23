@@ -16,6 +16,10 @@ export async function createMembershipRequest(req, res) {
     return res.status(400).json({ error: 'Nombre, correo y motivo son obligatorios.' })
   }
 
+  if (!EMAIL_PATTERN.test(email.trim())) {
+    return res.status(400).json({ error: 'Introduce un correo válido.' })
+  }
+
   if (typeof isUpoStudent !== 'boolean') {
     return res.status(400).json({ error: 'Indica si estudias en la UPO.' })
   }

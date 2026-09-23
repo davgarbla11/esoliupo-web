@@ -7,6 +7,7 @@ import leaveRequestsRoutes from './leaveRequests.routes.js'
 import membershipRequestsRoutes from './membershipRequests.routes.js'
 import membersRoutes from './members.routes.js'
 import positionsRoutes from './positions.routes.js'
+import settingsRoutes from './settings.routes.js'
 import trainingsRoutes from './trainings.routes.js'
 import usersRoutes from './users.routes.js'
 
@@ -23,5 +24,6 @@ router.use('/events', eventsRoutes)
 router.use('/trainings', trainingsRoutes)
 router.use('/admin', adminRoutes)
 router.use('/contact', contactRoutes)
+router.use('/settings', settingsRoutes)
 
 export default router

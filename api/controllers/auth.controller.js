@@ -28,32 +28,6 @@ function toPublicUser(user) {
   }
 }
 
-export async function register(req, res) {
-  const { email, password, name } = req.body
-
-  if (!email || !password || !name) {
-    return res.status(400).json({ error: 'Nombre, correo y contraseña son obligatorios.' })
-  }
-
-  if (password.length < 8) {
-    return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres.' })
-  }
-
-  const existing = await prisma.user.findUnique({ where: { email } })
-  if (existing) {
-    return res.status(409).json({ error: 'Ya existe una cuenta con ese correo.' })
-  }
-
-  const passwordHash = await bcrypt.hash(password, 10)
-  const user = await prisma.user.create({
-    data: { email, passwordHash, name },
-  })
-
-  const token = signAuthToken({ sub: user.id, role: user.role })
-  res.cookie(COOKIE_NAME, token, cookieOptions())
-  res.status(201).json({ user: toPublicUser(user) })
-}
-
 export async function login(req, res) {
   const { email, password } = req.body
 
@@ -95,6 +69,14 @@ export async function googleLogin(req, res) {
 
   if (!payload?.email || !payload.email_verified) {
     return res.status(401).json({ error: 'Tu cuenta de Google no tiene el correo verificado.' })
+  }
+
+  const workspaceDomain = process.env.GOOGLE_WORKSPACE_DOMAIN
+  if (workspaceDomain) {
+    const emailDomain = payload.email.split('@')[1]?.toLowerCase()
+    if (payload.hd !== workspaceDomain && emailDomain !== workspaceDomain) {
+      return res.status(403).json({ error: 'Solo se permiten cuentas de Google del dominio de la asociación.' })
+    }
   }
 
   let user = await prisma.user.findUnique({ where: { email: payload.email } })

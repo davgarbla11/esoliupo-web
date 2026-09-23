@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   createContactMessage,
+  deleteContactMessage,
   listContactMessages,
   replyToContactMessage,
 } from '../controllers/contact.controller.js'
@@ -9,7 +10,7 @@ import { mailRateLimit, requireSameOrigin } from '../middlewares/mailGuard.middl
 
 const router = Router()
 
-router.post('/', requireSameOrigin, createContactMessage)
+router.post('/', requireSameOrigin, mailRateLimit, createContactMessage)
 
 router.get('/', requireAuth, requirePermission('MANAGE_CONTACT'), listContactMessages)
 router.post(
@@ -20,5 +21,6 @@ router.post(
   mailRateLimit,
   replyToContactMessage,
 )
+router.delete('/:id', requireAuth, requirePermission('MANAGE_CONTACT'), deleteContactMessage)
 
 export default router
