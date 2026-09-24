@@ -13,7 +13,6 @@ function getErrorMessage(err: unknown, fallback: string) {
 
 function ForcePasswordChange() {
   const { refreshUser, logout } = useAuth()
-  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPasswords, setShowPasswords] = useState(false)
@@ -23,8 +22,8 @@ function ForcePasswordChange() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
 
-    if (!currentPassword || !newPassword) {
-      setError('Rellena tu contraseña actual y la nueva.')
+    if (!newPassword) {
+      setError('Rellena la nueva contraseña.')
       return
     }
     if (newPassword.length < 8) {
@@ -39,7 +38,7 @@ function ForcePasswordChange() {
     setLoading(true)
     setError('')
     try {
-      await api.post('/auth/change-password', { currentPassword, newPassword })
+      await api.post('/auth/change-password', { newPassword })
       await refreshUser()
     } catch (err) {
       setError(getErrorMessage(err, 'No se ha podido cambiar la contraseña.'))
@@ -83,23 +82,6 @@ function ForcePasswordChange() {
           </div>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-            <div>
-              <label
-                htmlFor="currentPassword"
-                className="mb-1.5 block text-sm font-medium text-white/80"
-              >
-                Contraseña actual (la temporal)
-              </label>
-              <input
-                id="currentPassword"
-                type={showPasswords ? 'text' : 'password'}
-                autoComplete="current-password"
-                value={currentPassword}
-                onChange={(event) => setCurrentPassword(event.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-white placeholder:text-white/30 focus:border-gold-400 focus:outline-none"
-              />
-            </div>
-
             <div>
               <label
                 htmlFor="newPassword"

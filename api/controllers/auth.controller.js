@@ -118,10 +118,10 @@ export async function logout(req, res) {
 }
 
 export async function changePassword(req, res) {
-  const { currentPassword, newPassword } = req.body
+  const { newPassword } = req.body
 
-  if (!currentPassword || !newPassword) {
-    return res.status(400).json({ error: 'Introduce tu contraseña actual y la nueva.' })
+  if (!newPassword) {
+    return res.status(400).json({ error: 'Introduce la nueva contraseña.' })
   }
   if (newPassword.length < 8) {
     return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 8 caracteres.' })
@@ -130,11 +130,6 @@ export async function changePassword(req, res) {
   const user = await prisma.user.findUnique({ where: { id: req.user.sub } })
   if (!user) {
     return res.status(404).json({ error: 'Usuario no encontrado.' })
-  }
-
-  const currentMatches = await bcrypt.compare(currentPassword, user.passwordHash)
-  if (!currentMatches) {
-    return res.status(401).json({ error: 'La contraseña actual no es correcta.' })
   }
 
   const passwordHash = await bcrypt.hash(newPassword, 10)
