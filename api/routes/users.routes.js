@@ -2,6 +2,7 @@ import { Router } from 'express'
 import multer from 'multer'
 import {
   createUser,
+  deleteUserAvatar,
   getNotifiableCount,
   listUserDirectory,
   listUsers,
@@ -42,6 +43,13 @@ router.post(
   requireSelfOrPermission('MANAGE_USERS'),
   upload.single('avatar'),
   uploadUserAvatar,
+)
+
+router.delete(
+  '/:id/avatar',
+  requireAuth,
+  requireSelfOrPermission('MANAGE_USERS'),
+  deleteUserAvatar,
 )
 
 router.patch(
