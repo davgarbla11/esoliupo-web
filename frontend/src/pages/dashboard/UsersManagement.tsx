@@ -142,7 +142,7 @@ function UsersManagement() {
     })
   }
 
-  function handleAvatarChange(id: string, photoUrl: string) {
+  function handleAvatarChange(id: string, photoUrl: string | null) {
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, photoUrl } : u)))
   }
 

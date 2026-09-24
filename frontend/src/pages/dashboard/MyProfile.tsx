@@ -12,7 +12,8 @@ import {
   Save,
   UserX,
 } from 'lucide-react'
-import { type ChangeEvent, useRef, useState } from 'react'
+import { useState } from 'react'
+import AvatarEditorDialog from '../../components/dashboard/AvatarEditorDialog'
 import { type Role, useAuth } from '../../context/AuthContext'
 import api from '../../lib/api'
 
@@ -39,10 +40,8 @@ function getErrorMessage(err: unknown, fallback: string) {
 
 function MyProfile() {
   const { user, refreshUser } = useAuth()
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [avatarUploading, setAvatarUploading] = useState(false)
-  const [avatarError, setAvatarError] = useState('')
+  const [avatarDialogOpen, setAvatarDialogOpen] = useState(false)
 
   const [studies, setStudies] = useState(user?.studies ?? '')
   const [studiesSaving, setStudiesSaving] = useState(false)
@@ -61,27 +60,6 @@ function MyProfile() {
 
   const userId = user.id
   const notifyEvents = user.notifyEvents
-
-  async function handleAvatarSelected(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    event.target.value = ''
-    if (!file) return
-
-    setAvatarUploading(true)
-    setAvatarError('')
-    try {
-      const formData = new FormData()
-      formData.append('avatar', file)
-      await api.post(`/users/${userId}/avatar`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
-      await refreshUser()
-    } catch (err) {
-      setAvatarError(getErrorMessage(err, 'No se ha podido subir la foto.'))
-    } finally {
-      setAvatarUploading(false)
-    }
-  }
 
   async function handleSaveStudies() {
     setStudiesSaving(true)
@@ -126,6 +104,7 @@ function MyProfile() {
   }
 
   return (
+    <>
     <div className="mx-auto max-w-3xl px-6 py-12">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -146,8 +125,7 @@ function MyProfile() {
       >
         <button
           type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={avatarUploading}
+          onClick={() => setAvatarDialogOpen(true)}
           className="group relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gold-400 text-2xl font-semibold text-neutral-900"
           aria-label="Cambiar foto de perfil"
         >
@@ -161,20 +139,9 @@ function MyProfile() {
             getInitials(user.name)
           )}
           <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
-            {avatarUploading ? (
-              <Loader2 size={20} className="animate-spin text-white" />
-            ) : (
-              <Camera size={20} className="text-white" />
-            )}
+            <Camera size={20} className="text-white" />
           </span>
         </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={handleAvatarSelected}
-          className="hidden"
-        />
         <div>
           <p className="text-lg font-medium text-white">{user.name}</p>
           <p className="text-sm text-white/50">{user.email}</p>
@@ -183,12 +150,6 @@ function MyProfile() {
           </span>
         </div>
       </motion.div>
-      {avatarError && (
-        <p className="mt-2 flex items-center gap-2 text-sm text-red-400">
-          <CircleAlert size={14} />
-          {avatarError}
-        </p>
-      )}
 
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -338,6 +299,16 @@ function MyProfile() {
         )}
       </motion.div>
     </div>
+    {avatarDialogOpen && (
+      <AvatarEditorDialog
+        userId={userId}
+        userName={user.name}
+        photoUrl={user.photoUrl}
+        onClose={() => setAvatarDialogOpen(false)}
+        onUpdated={() => refreshUser()}
+      />
+    )}
+    </>
   )
 }
 

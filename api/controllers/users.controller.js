@@ -190,6 +190,29 @@ export async function uploadUserAvatar(req, res) {
   res.json({ user: toPublicUser(updated) })
 }
 
+export async function deleteUserAvatar(req, res) {
+  const { id } = req.params
+
+  const user = await prisma.user.findUnique({ where: { id } })
+  if (!user) {
+    return res.status(404).json({ error: 'Usuario no encontrado.' })
+  }
+
+  try {
+    await fs.unlink(avatarPath(id))
+  } catch (err) {
+    if (err.code !== 'ENOENT') throw err
+  }
+
+  const updated = await prisma.user.update({
+    where: { id },
+    data: { photoUrl: null },
+    include: { position: true },
+  })
+
+  res.json({ user: toPublicUser(updated) })
+}
+
 export async function resetUserPassword(req, res) {
   const { id } = req.params
 

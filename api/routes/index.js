@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import adminRoutes from './admin.routes.js'
+import announcementsRoutes from './announcements.routes.js'
 import authRoutes from './auth.routes.js'
 import contactRoutes from './contact.routes.js'
 import eventsRoutes from './events.routes.js'
@@ -14,6 +15,7 @@ import usersRoutes from './users.routes.js'
 const router = Router()
 
 router.get('/health', (req, res) => res.json({ status: 'ok' }))
+router.use('/announcements', announcementsRoutes)
 router.use('/auth', authRoutes)
 router.use('/users', usersRoutes)
 router.use('/members', membersRoutes)
