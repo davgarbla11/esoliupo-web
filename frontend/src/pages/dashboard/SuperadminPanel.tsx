@@ -1,6 +1,14 @@
 import { isAxiosError } from 'axios'
 import { motion } from 'framer-motion'
-import { CircleAlert, Loader2, RefreshCw, Send, TriangleAlert } from 'lucide-react'
+import {
+  CircleAlert,
+  Loader2,
+  Megaphone,
+  RefreshCw,
+  Send,
+  Trash2,
+  TriangleAlert,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useMaintenance } from '../../context/MaintenanceContext'
 import api from '../../lib/api'
@@ -18,7 +26,205 @@ function getErrorMessage(err: unknown, fallback: string) {
   return isAxiosError<{ error?: string }>(err) ? err.response?.data.error ?? fallback : fallback
 }
 
-type Tab = 'correo' | 'logs' | 'mantenimiento'
+type Tab = 'correo' | 'logs' | 'mantenimiento' | 'anuncios'
+
+const TITLE_MAX_LENGTH = 120
+const MESSAGE_MAX_LENGTH = 500
+
+type Announcement = {
+  id: string
+  title: string
+  message: string
+  active: boolean
+  createdAt: string
+}
+
+function AnnouncementsTab() {
+  const [announcements, setAnnouncements] = useState<Announcement[]>([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
+
+  const [title, setTitle] = useState('')
+  const [message, setMessage] = useState('')
+  const [creating, setCreating] = useState(false)
+  const [createError, setCreateError] = useState('')
+
+  const [busyId, setBusyId] = useState('')
+
+  useEffect(() => {
+    loadAnnouncements()
+  }, [])
+
+  async function loadAnnouncements() {
+    setLoading(true)
+    setLoadError('')
+    try {
+      const res = await api.get<{ announcements: Announcement[] }>('/announcements')
+      setAnnouncements(res.data.announcements)
+    } catch (err) {
+      setLoadError(getErrorMessage(err, 'No se han podido cargar los anuncios.'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleCreate() {
+    if (!title.trim() || !message.trim()) return
+    setCreating(true)
+    setCreateError('')
+    try {
+      const res = await api.post<{ announcement: Announcement }>('/announcements', {
+        title: title.trim(),
+        message: message.trim(),
+      })
+      setAnnouncements((prev) => [res.data.announcement, ...prev])
+      setTitle('')
+      setMessage('')
+    } catch (err) {
+      setCreateError(getErrorMessage(err, 'No se ha podido publicar el anuncio.'))
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  async function handleToggleActive(announcement: Announcement) {
+    setBusyId(announcement.id)
+    try {
+      const res = await api.patch<{ announcement: Announcement }>(
+        `/announcements/${announcement.id}/status`,
+        { active: !announcement.active },
+      )
+      setAnnouncements((prev) =>
+        prev.map((item) => (item.id === announcement.id ? res.data.announcement : item)),
+      )
+    } catch {
+      // el estado anterior se mantiene, no hay nada más que hacer aquí
+    } finally {
+      setBusyId('')
+    }
+  }
+
+  async function handleDelete(id: string) {
+    setBusyId(id)
+    try {
+      await api.delete(`/announcements/${id}`)
+      setAnnouncements((prev) => prev.filter((item) => item.id !== id))
+    } catch {
+      // idem
+    } finally {
+      setBusyId('')
+    }
+  }
+
+  return (
+    <div className="mt-8 max-w-2xl">
+      <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+        <p className="text-sm font-medium text-white">Publicar nuevo anuncio</p>
+        <p className="mt-1 text-sm text-white/50">
+          Se mostrará flotando a cualquiera que entre en la web pública.
+        </p>
+        <input
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          placeholder="Título"
+          maxLength={TITLE_MAX_LENGTH}
+          className="mt-3 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-gold-400 focus:outline-none"
+        />
+        <textarea
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
+          placeholder="Mensaje"
+          maxLength={MESSAGE_MAX_LENGTH}
+          rows={3}
+          className="mt-2 w-full resize-none rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-gold-400 focus:outline-none"
+        />
+        {createError && (
+          <p className="mt-2 flex items-center gap-2 text-sm text-red-400">
+            <CircleAlert size={14} />
+            {createError}
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={handleCreate}
+          disabled={creating || !title.trim() || !message.trim()}
+          className="mt-3 inline-flex items-center gap-2 rounded-full bg-gold-400 px-5 py-2.5 text-sm font-semibold text-neutral-900 transition-transform hover:scale-105 disabled:opacity-60"
+        >
+          {creating ? <Loader2 size={16} className="animate-spin" /> : <Megaphone size={16} />}
+          Publicar
+        </button>
+      </div>
+
+      {loading && (
+        <div className="mt-10 flex justify-center">
+          <Loader2 className="animate-spin text-gold-400" size={28} />
+        </div>
+      )}
+
+      {!loading && loadError && (
+        <p className="mt-6 flex items-center gap-2 text-sm text-red-400">
+          <CircleAlert size={14} />
+          {loadError}
+        </p>
+      )}
+
+      {!loading && !loadError && (
+        <div className="mt-6 space-y-2">
+          {announcements.map((announcement) => (
+            <div
+              key={announcement.id}
+              className="flex items-start justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-4"
+            >
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-white">{announcement.title}</p>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                      announcement.active
+                        ? 'bg-green-400/10 text-green-400'
+                        : 'bg-white/10 text-white/40'
+                    }`}
+                  >
+                    {announcement.active ? 'Activo' : 'Oculto'}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-white/60">{announcement.message}</p>
+                <p className="mt-1 text-xs text-white/30">
+                  {DATE_LABEL.format(new Date(announcement.createdAt))}
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleToggleActive(announcement)}
+                  disabled={busyId === announcement.id}
+                  className="rounded-full border border-white/10 px-3 py-1.5 text-xs font-medium text-white/70 hover:bg-white/5 disabled:opacity-50"
+                >
+                  {announcement.active ? 'Ocultar' : 'Mostrar'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(announcement.id)}
+                  disabled={busyId === announcement.id}
+                  className="rounded-full p-1.5 text-white/40 hover:bg-red-400/10 hover:text-red-300 disabled:opacity-50"
+                  aria-label="Eliminar anuncio"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {announcements.length === 0 && (
+            <p className="rounded-xl border border-white/10 bg-white/[0.02] px-4 py-8 text-center text-sm text-white/40">
+              No hay anuncios todavía.
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function MaintenanceTab() {
   const { maintenanceMode, loading, refresh } = useMaintenance()
@@ -272,7 +478,7 @@ function SuperadminPanel() {
       </motion.div>
 
       <div className="mt-6 flex gap-1 border-b border-white/10">
-        {(['correo', 'logs', 'mantenimiento'] as const).map((value) => (
+        {(['correo', 'logs', 'mantenimiento', 'anuncios'] as const).map((value) => (
           <button
             key={value}
             type="button"
@@ -283,7 +489,13 @@ function SuperadminPanel() {
                 : 'text-white/50 hover:text-white'
             }`}
           >
-            {value === 'correo' ? 'Correo' : value === 'logs' ? 'Logs' : 'Mantenimiento'}
+            {value === 'correo'
+              ? 'Correo'
+              : value === 'logs'
+                ? 'Logs'
+                : value === 'mantenimiento'
+                  ? 'Mantenimiento'
+                  : 'Anuncios'}
           </button>
         ))}
       </div>
@@ -291,6 +503,7 @@ function SuperadminPanel() {
       {tab === 'correo' && <TestEmailTab />}
       {tab === 'logs' && <LogsTab />}
       {tab === 'mantenimiento' && <MaintenanceTab />}
+      {tab === 'anuncios' && <AnnouncementsTab />}
     </div>
   )
 }

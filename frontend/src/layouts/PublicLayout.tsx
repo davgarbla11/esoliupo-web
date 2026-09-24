@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import AnnouncementBanner from '../components/AnnouncementBanner'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import HeroBackground from '../components/HeroBackground'
@@ -12,6 +13,7 @@ function PublicLayout() {
         <Outlet />
       </main>
       <Footer />
+      <AnnouncementBanner />
     </div>
   )
 }

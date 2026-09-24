@@ -32,6 +32,7 @@ model User {
   auditLogs           AuditLog[]
   contactReplies      ContactMessage[]     @relation("ContactMessageRepliedBy")
   passwordResetTokens PasswordResetToken[]
+  announcements       Announcement[]
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 
@@ -161,6 +162,19 @@ model ContactMessage {
   createdAt    DateTime             @default(now())
 
   @@map("contact_messages")
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  active    Boolean  @default(true)
+  authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("announcements")
 }
 
 model AppSettings {
