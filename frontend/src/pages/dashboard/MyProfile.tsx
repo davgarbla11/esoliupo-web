@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import AvatarEditorDialog from '../../components/dashboard/AvatarEditorDialog'
+import { GithubIcon, LinkedinIcon } from '../../components/SocialIcons'
 import { type Role, useAuth } from '../../context/AuthContext'
 import api from '../../lib/api'
 
@@ -48,6 +49,12 @@ function MyProfile() {
   const [studiesError, setStudiesError] = useState('')
   const [studiesSaved, setStudiesSaved] = useState(false)
 
+  const [linkedinUrl, setLinkedinUrl] = useState(user?.linkedinUrl ?? '')
+  const [githubUrl, setGithubUrl] = useState(user?.githubUrl ?? '')
+  const [socialsSaving, setSocialsSaving] = useState(false)
+  const [socialsError, setSocialsError] = useState('')
+  const [socialsSaved, setSocialsSaved] = useState(false)
+
   const [notifySaving, setNotifySaving] = useState(false)
   const [notifyError, setNotifyError] = useState('')
 
@@ -73,6 +80,26 @@ function MyProfile() {
       setStudiesError(getErrorMessage(err, 'No se ha podido guardar.'))
     } finally {
       setStudiesSaving(false)
+    }
+  }
+
+  async function handleSaveSocials() {
+    setSocialsSaving(true)
+    setSocialsError('')
+    try {
+      const res = await api.patch<{ user: { linkedinUrl: string | null; githubUrl: string | null } }>(
+        `/users/${userId}/profile`,
+        { linkedinUrl, githubUrl },
+      )
+      setLinkedinUrl(res.data.user.linkedinUrl ?? '')
+      setGithubUrl(res.data.user.githubUrl ?? '')
+      await refreshUser()
+      setSocialsSaved(true)
+      setTimeout(() => setSocialsSaved(false), 2000)
+    } catch (err) {
+      setSocialsError(getErrorMessage(err, 'No se ha podido guardar.'))
+    } finally {
+      setSocialsSaving(false)
     }
   }
 
@@ -195,6 +222,66 @@ function MyProfile() {
           <p className="mt-2 flex items-center gap-2 text-sm text-red-400">
             <CircleAlert size={14} />
             {studiesError}
+          </p>
+        )}
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.12 }}
+        className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-6"
+      >
+        <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-white/80">
+          <LinkedinIcon size={16} />
+          Redes sociales laborales
+        </label>
+        <p className="mb-3 text-sm text-white/50">
+          Se mostrarán en la web pública, en la sección Quiénes somos.
+        </p>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <LinkedinIcon size={16} className="shrink-0 text-white/40" />
+            <input
+              value={linkedinUrl}
+              onChange={(event) => setLinkedinUrl(event.target.value)}
+              placeholder="https://www.linkedin.com/in/tu-perfil"
+              className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-gold-400 focus:outline-none"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <GithubIcon size={16} className="shrink-0 text-white/40" />
+            <input
+              value={githubUrl}
+              onChange={(event) => setGithubUrl(event.target.value)}
+              placeholder="https://github.com/tu-usuario"
+              className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-gold-400 focus:outline-none"
+            />
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleSaveSocials}
+          disabled={socialsSaving}
+          className="mt-3 inline-flex items-center gap-2 rounded-full bg-gold-400 px-4 py-2 text-sm font-semibold text-neutral-900 disabled:opacity-60"
+        >
+          {socialsSaving ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <Save size={14} />
+          )}
+          Guardar
+        </button>
+        {socialsSaved && (
+          <p className="mt-2 flex items-center gap-1 text-sm text-green-400">
+            <Check size={14} />
+            Guardado.
+          </p>
+        )}
+        {socialsError && (
+          <p className="mt-2 flex items-center gap-2 text-sm text-red-400">
+            <CircleAlert size={14} />
+            {socialsError}
           </p>
         )}
       </motion.div>

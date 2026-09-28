@@ -10,6 +10,8 @@ export type User = {
   role: Role
   photoUrl: string | null
   studies: string | null
+  linkedinUrl: string | null
+  githubUrl: string | null
   notifyEvents: boolean
   mustChangePassword: boolean
 }

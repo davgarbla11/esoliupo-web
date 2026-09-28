@@ -11,6 +11,8 @@ type PublicMember = {
   position: string | null
   studies: string | null
   photoUrl: string | null
+  linkedinUrl: string | null
+  githubUrl: string | null
 }
 
 function WhoWeAre() {
@@ -88,6 +90,8 @@ function WhoWeAre() {
                     role={member.position ?? ''}
                     studies={member.studies}
                     photo={member.photoUrl}
+                    linkedinUrl={member.linkedinUrl}
+                    githubUrl={member.githubUrl}
                   />
                 ))}
               </div>
@@ -106,6 +110,8 @@ function WhoWeAre() {
                     role="Colaborador externo"
                     studies={member.studies}
                     photo={member.photoUrl}
+                    linkedinUrl={member.linkedinUrl}
+                    githubUrl={member.githubUrl}
                   />
                 ))}
               </div>
@@ -126,6 +132,8 @@ function WhoWeAre() {
                     role="Socio"
                     studies={member.studies}
                     photo={member.photoUrl}
+                    linkedinUrl={member.linkedinUrl}
+                    githubUrl={member.githubUrl}
                   />
                 ))}
               </div>

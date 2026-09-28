@@ -6,6 +6,7 @@ import { renderPasswordResetEmail } from '../lib/emailTemplates.js'
 import { sendMail } from '../lib/mailer.js'
 import prisma from '../lib/prisma.js'
 import { ROLES } from '../lib/rbac.js'
+import { normalizeSocialUrl } from '../lib/socialLinks.js'
 import { avatarPath, avatarUrl } from '../lib/storage.js'
 
 function toPublicUser(user) {
@@ -18,6 +19,8 @@ function toPublicUser(user) {
     position: user.position?.name ?? null,
     studies: user.studies,
     photoUrl: user.photoUrl,
+    linkedinUrl: user.linkedinUrl,
+    githubUrl: user.githubUrl,
     notifyEvents: user.notifyEvents,
     createdAt: user.createdAt,
   }
@@ -137,7 +140,7 @@ export async function updateUserStatus(req, res) {
 
 export async function updateUserProfile(req, res) {
   const { id } = req.params
-  const { studies, photoUrl, notifyEvents } = req.body
+  const { studies, photoUrl, notifyEvents, linkedinUrl, githubUrl } = req.body
 
   const data = {}
   if (studies !== undefined) data.studies = studies?.trim() || null
@@ -147,6 +150,20 @@ export async function updateUserProfile(req, res) {
       return res.status(400).json({ error: 'Preferencia inválida.' })
     }
     data.notifyEvents = notifyEvents
+  }
+  if (linkedinUrl !== undefined) {
+    const result = normalizeSocialUrl('linkedinUrl', linkedinUrl)
+    if (result.error) {
+      return res.status(400).json({ error: 'El enlace de LinkedIn no es válido. Debe ser una URL de linkedin.com' })
+    }
+    data.linkedinUrl = result.value
+  }
+  if (githubUrl !== undefined) {
+    const result = normalizeSocialUrl('githubUrl', githubUrl)
+    if (result.error) {
+      return res.status(400).json({ error: 'El enlace de GitHub no es válido. Debe ser una URL de github.com' })
+    }
+    data.githubUrl = result.value
   }
 
   const user = await prisma.user.findUnique({ where: { id } })

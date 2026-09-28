@@ -8,6 +8,8 @@ function toPublicMember(user, position) {
     position: position ?? null,
     studies: user.studies,
     photoUrl: user.photoUrl,
+    linkedinUrl: user.linkedinUrl,
+    githubUrl: user.githubUrl,
   }
 }
 
