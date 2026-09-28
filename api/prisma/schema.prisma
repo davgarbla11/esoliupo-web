@@ -25,6 +25,8 @@ model User {
   notifyEvents        Boolean              @default(true)
   studies             String?
   photoUrl            String?
+  linkedinUrl         String?
+  githubUrl           String?
   position            Position?
   leaveRequests       LeaveRequest[]
   trainingsTaught     Training[]           @relation("TrainingInstructor")

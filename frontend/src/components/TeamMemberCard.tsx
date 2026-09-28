@@ -1,10 +1,13 @@
 import { motion } from 'framer-motion'
+import { GithubIcon, LinkedinIcon } from './SocialIcons'
 
 type TeamMemberCardProps = {
   name: string
   role: string
   studies?: string | null
   photo?: string | null
+  linkedinUrl?: string | null
+  githubUrl?: string | null
   index: number
 }
 
@@ -18,7 +21,15 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
-function TeamMemberCard({ name, role, studies, photo, index }: TeamMemberCardProps) {
+function TeamMemberCard({
+  name,
+  role,
+  studies,
+  photo,
+  linkedinUrl,
+  githubUrl,
+  index,
+}: TeamMemberCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -45,6 +56,33 @@ function TeamMemberCard({ name, role, studies, photo, index }: TeamMemberCardPro
       </p>
       {studies && (
         <p className="mt-2 text-sm leading-relaxed text-white/50">{studies}</p>
+      )}
+
+      {(linkedinUrl || githubUrl) && (
+        <div className="mt-4 flex items-center gap-3">
+          {linkedinUrl && (
+            <a
+              href={linkedinUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`LinkedIn de ${name}`}
+              className="text-white/40 transition-colors hover:text-gold-400"
+            >
+              <LinkedinIcon size={18} />
+            </a>
+          )}
+          {githubUrl && (
+            <a
+              href={githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`GitHub de ${name}`}
+              className="text-white/40 transition-colors hover:text-gold-400"
+            >
+              <GithubIcon size={18} />
+            </a>
+          )}
+        </div>
       )}
     </motion.div>
   )
